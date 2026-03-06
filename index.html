@@ -3,191 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Design Base</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <title>3D Model Library</title>
     <style>
-        :root {
-            --bg-color: #1c1c1d;
-            --secondary-bg: #2c2c2e;
-            --accent-color: #007aff;
-            --text-main: #ffffff;
-            --border-color: #3a3a3c;
-        }
-
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 0; overflow-x: hidden; }
-        
-        .header { padding: 15px; position: sticky; top: 0; background: var(--bg-color); z-index: 100; border-bottom: 1px solid var(--border-color); }
-        .search-box { width: 100%; padding: 12px; border-radius: 12px; border: none; background: var(--secondary-bg); color: white; box-sizing: border-box; }
-
-        /* Навігація */
-        .nav-wrapper { padding: 10px; border-bottom: 1px solid var(--border-color); }
-        .nav-scroll { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 5px; }
-        .nav-scroll::-webkit-scrollbar { display: none; }
-        
-        .btn-cat { background: var(--secondary-bg); border: 1px solid var(--border-color); color: white; padding: 8px 16px; border-radius: 20px; white-space: nowrap; font-size: 14px; cursor: pointer; }
-        .btn-cat.active { background: var(--accent-color); border-color: var(--accent-color); }
-        .btn-back { background: #eb4439; color: white; }
-
-        .content { padding: 15px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .card { background: var(--secondary-bg); border-radius: 15px; overflow: hidden; border: 1px solid var(--border-color); display: flex; flex-direction: column; }
-        .card img { width: 100%; height: 120px; object-fit: cover; }
-        .card-info { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; }
-        .card-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; height: 32px; overflow: hidden; }
-        .download-btn { background: var(--accent-color); color: white; text-align: center; text-decoration: none; padding: 8px; border-radius: 10px; font-size: 12px; font-weight: bold; }
+        /* Основні стилі для охайного вигляду */
+        body { font-family: sans-serif; background: #1a1a1a; color: white; margin: 0; padding: 10px; }
+        .menu-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+        .btn-cat { background: #333; color: white; border: 1px solid #444; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+        .btn-cat.active { background: #007bff; border-color: #007bff; }
+        .models-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+        .model-card { background: #2a2a2a; border-radius: 8px; overflow: hidden; padding: 10px; text-align: center; }
+        .model-card img { width: 100%; height: 120px; object-fit: cover; border-radius: 5px; background: #000; }
+        .model-name { font-size: 14px; margin: 10px 0; height: 35px; overflow: hidden; }
+        .btn-download { display: block; background: #28a745; color: white; text-decoration: none; padding: 8px; border-radius: 5px; font-size: 13px; }
+        #subCategories { margin-top: 10px; border-top: 1px solid #444; padding-top: 10px; display: none; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <input type="text" id="searchInput" class="search-box" placeholder="Пошук моделі...">
+    <input type="text" id="searchInput" placeholder="Пошук моделі..." style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px; border: none;">
+
+    <div id="mainMenu" class="menu-container">
+        <button class="btn-cat active" onclick="selectMain('all', this)">Всі моделі</button>
     </div>
 
-    <div class="nav-wrapper">
-        <div class="nav-scroll" id="mainMenu">
-            <button class="btn-cat active" onclick="selectMain('all')">Всі</button>
+    <div id="subCategories" class="menu-container"></div>
+
+    <div id="modelsGrid" class="models-grid">
         </div>
-        <div class="nav-scroll" id="subMenu" style="margin-top: 10px; display: none;"></div>
-    </div>
-
-    <div class="content">
-        <div class="grid" id="catalog">Завантаження...</div>
-    </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-
-        // Дані категорій з вашого документа
+        // ВАШІ КАТЕГОРІЇ
         const categoryData = {
-    "#architecture_elements": [
-        "#ceiling", "#wall", "#floor", "#columns", "#stairs", "#windows", "#doors", "#moulding", "#beams"
-    ],
-    "#furniture": [
-        "#sofa", "#chair", "#armchair", "#bed", "#table", "#wardrobe", "#cabinet", "#pouf", "#tv_wall", "#shelving"
-    ],
-    "#lighting": [
-        "#pendant_lamp", "#chandelier", "#wall_lamp", "#floor_lamp", "#table_lamp", "#street_light", "#technical_light"
-    ],
-    "#decor": [
-        "#rugs", "#curtains", "#paintings", "#clocks", "#vases", "#mirrors", "#plants_indoor", "#books", "#candles", "#sculptures"
-    ],
-    "#bathroom": [
-        "#taps", "#bathtubs", "#ceramics", "#showers", "#toilets", "#sinks", "#bathroom_decor", "#towel_rails", "#bathroom_accessories"
-    ],
-    "#kitchen": [
-        "#kitchen_sets", "#appliances", "#sinks_kitchen", "#kitchen_islands", "#kitchen_decor", "#tableware", "#kitchen_tools"
-    ],
-    "#nature": [
-        "#trees", "#bushes", "#flowers", "#grass", "#rocks", "#stumps"
-    ],
-    "#materials": [
-        "#wood", "#stone", "#metal", "#fabric", "#glass", "#concrete", "#tiles", "#wallpaper"
-    ],
-    "#outdoor": [
-        "#garden_furniture", "#paving", "#fences", "#pools", "#pavilions"
-    ],
-    "#technology": [
-        "#tv", "#audio", "#computers", "#gadgets", "#kitchen_appliances"
-    ]
-};
+            "#architecture_elements": ["#ceiling", "#wall", "#floor", "#columns", "#stairs", "#windows", "#doors", "#moulding", "#beams"],
+            "#furniture": ["#sofa", "#chair", "#armchair", "#bed", "#table", "#wardrobe", "#cabinet", "#pouf", "#tv_wall", "#shelving"],
+            "#lighting": ["#pendant_lamp", "#chandelier", "#wall_lamp", "#floor_lamp", "#table_lamp", "#street_light", "#technical_light"],
+            "#decor": ["#rugs", "#curtains", "#paintings", "#clocks", "#vases", "#mirrors", "#plants_indoor", "#books", "#candles", "#sculptures"],
+            "#bathroom": ["#taps", "#bathtubs", "#ceramics", "#showers", "#toilets", "#sinks", "#bathroom_decor", "#towel_rails", "#bathroom_accessories"],
+            "#kitchen": ["#kitchen_sets", "#appliances", "#sinks_kitchen", "#kitchen_islands", "#kitchen_decor", "#tableware", "#kitchen_tools"],
+            "#nature": ["#trees", "#bushes", "#flowers", "#grass", "#rocks"],
+            "#materials": ["#wood", "#stone", "#metal", "#fabric", "#glass", "#concrete", "#tiles", "#wallpaper"],
+            "#outdoor": ["#garden_furniture", "#paving", "#fences", "#pools", "#pavilions"],
+            "#technology": ["#tv", "#audio", "#computers", "#gadgets"]
+        };
 
-        const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLjYuSElQsiwhHYMm_ZJpYX1oW0Y4KiHAaKrdmaalvl2qZipX1hephAhcE3w0MdHXTfqsOVnFNp62J/pub?output=csv';
         let allModels = [];
         let currentMain = 'all';
         let currentSub = 'all';
 
-        // Ініціалізація головного меню
-       const mainMenuDiv = document.getElementById('mainMenu');
-Object.keys(categoryData).forEach(cat => {
-    const btn = document.createElement('button');
-    btn.className = 'btn-cat';
-    
-    // Робимо текст гарним: прибираємо #, замінюємо _ на пробіл, робимо першу букву великою
-    let displayName = cat.replace('#', '').replace(/_/g, ' ');
-    btn.innerText = displayName.charAt(0).toUpperCase() + displayName.slice(1);
-    
-    btn.onclick = () => selectMain(cat, btn); // Передаємо оригінальний тег # для фільтрації
-    mainMenuDiv.appendChild(btn);
-});
+        // ПІДКЛЮЧЕННЯ ДО ТАБЛИЦІ (CSV формат)
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1bcX0zQphJsAmFTySQ_iWYpNXgFnNZ5XGBHpGGvHI9K8/export?format=csv';
 
+        async function loadModels() {
+            try {
+                const response = await fetch(SHEET_CSV_URL);
+                const data = await response.text();
+                const rows = data.split('\n').slice(1); // Пропускаємо перший рядок з заголовками
+
+                allModels = rows.map(row => {
+                    const columns = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // Правильний поділ CSV
+                    return {
+                        name: columns[0]?.replace(/"/g, ''),
+                        preview: columns[1]?.replace(/"/g, ''),
+                        archive: columns[2]?.replace(/"/g, ''),
+                        tags: columns[3]?.replace(/"/g, '')
+                    };
+                }).filter(m => m.name);
+
+                renderModels(allModels);
+            } catch (e) {
+                console.error("Помилка завантаження:", e);
+            }
+        }
+
+        function renderModels(models) {
+            const grid = document.getElementById('modelsGrid');
+            grid.innerHTML = '';
+            models.forEach(m => {
+                const card = document.createElement('div');
+                card.className = 'model-card';
+                card.innerHTML = `
+                    <img src="${m.preview}" alt="Loading..." onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
+                    <div class="model-name">${m.name}</div>
+                    <a href="${m.archive}" class="btn-download" target="_blank">Завантажити</a>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Логіка кнопок
         function selectMain(cat, btn) {
+            document.querySelectorAll('#mainMenu .btn-cat').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
             currentMain = cat;
             currentSub = 'all';
             
-            // Візуальне перемикання кнопок
-            document.querySelectorAll('#mainMenu .btn-cat').forEach(b => b.classList.remove('active'));
-            if(btn) btn.classList.add('active'); else document.querySelector('#mainMenu .btn-cat').classList.add('active');
-
-            const subMenuDiv = document.getElementById('subMenu');
-            if (cat === 'all' || !categoryData[cat]) {
-                subMenuDiv.style.display = 'none';
-            } else {
-                subMenuDiv.style.display = 'flex';
-                subMenuDiv.innerHTML = `<button class="btn-cat active" onclick="selectSub('all', this)">Все в ${cat}</button>`;
+            const subDiv = document.getElementById('subCategories');
+            subDiv.innerHTML = '';
+            
+            if (cat !== 'all' && categoryData[cat]) {
+                subDiv.style.display = 'flex';
                 categoryData[cat].forEach(sub => {
                     const sBtn = document.createElement('button');
                     sBtn.className = 'btn-cat';
-                    sBtn.innerText = sub;
-                    sBtn.onclick = () => selectSub(sub, sBtn);
-                    subMenuDiv.appendChild(sBtn);
+                    sBtn.innerText = sub.replace('#', '').replace('_', ' ');
+                    sBtn.onclick = () => {
+                        document.querySelectorAll('#subCategories .btn-cat').forEach(b => b.classList.remove('active'));
+                        sBtn.classList.add('active');
+                        currentSub = sub;
+                        filterModels();
+                    };
+                    subDiv.appendChild(sBtn);
                 });
+            } else {
+                subDiv.style.display = 'none';
             }
             filterModels();
         }
 
-        function selectSub(sub, btn) {
-            currentSub = sub;
-            document.querySelectorAll('#subMenu .btn-cat').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            filterModels();
-        }
-
-        function renderModels(models) {
-            const container = document.getElementById('catalog');
-            container.innerHTML = models.length ? '' : '<div style="grid-column: 1/3; text-align: center; color: gray;">Нічого не знайдено</div>';
-            
-            models.forEach(model => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <img src="${model.preview}" onerror="this.src='https://via.placeholder.com/150x120?text=3D+Model'">
-                    <div class="card-info">
-                        <div class="card-title">${model.name}</div>
-                        <a href="${model.link}" class="download-btn" target="_blank">Скачати</a>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
         function filterModels() {
-            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const query = document.getElementById('searchInput').value.toLowerCase();
             const filtered = allModels.filter(m => {
                 const tags = (m.tags || "").toLowerCase();
                 const name = (m.name || "").toLowerCase();
-                
                 const matchSearch = name.includes(query) || tags.includes(query);
                 const matchMain = currentMain === 'all' || tags.includes(currentMain.toLowerCase());
                 const matchSub = currentSub === 'all' || tags.includes(currentSub.toLowerCase());
-                
                 return matchSearch && matchMain && matchSub;
             });
             renderModels(filtered);
         }
 
-        Papa.parse(sheetUrl, {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
-            complete: function(results) {
-                allModels = results.data.filter(row => row.name);
-                renderModels(allModels);
-            }
+        // Ініціалізація меню
+        const mainMenu = document.getElementById('mainMenu');
+        Object.keys(categoryData).forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-cat';
+            btn.innerText = cat.replace('#', '').replace('_', ' ').toUpperCase();
+            btn.onclick = () => selectMain(cat, btn);
+            mainMenu.appendChild(btn);
         });
 
-        document.getElementById('searchInput').addEventListener('input', filterModels);
+        document.getElementById('searchInput').oninput = filterModels;
+        loadModels();
     </script>
 </body>
 </html>
