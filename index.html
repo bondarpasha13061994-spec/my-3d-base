@@ -5,22 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Model Library</title>
     <style>
-        /* Основні стилі для охайного вигляду */
         body { font-family: sans-serif; background: #1a1a1a; color: white; margin: 0; padding: 10px; }
         .menu-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
-        .btn-cat { background: #333; color: white; border: 1px solid #444; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+        .btn-cat { background: #333; color: white; border: 1px solid #444; padding: 8px 12px; border-radius: 5px; cursor: pointer; text-transform: capitalize; }
         .btn-cat.active { background: #007bff; border-color: #007bff; }
         .models-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
-        .model-card { background: #2a2a2a; border-radius: 8px; overflow: hidden; padding: 10px; text-align: center; }
-        .model-card img { width: 100%; height: 120px; object-fit: cover; border-radius: 5px; background: #000; }
-        .model-name { font-size: 14px; margin: 10px 0; height: 35px; overflow: hidden; }
+        .model-card { background: #2a2a2a; border-radius: 8px; overflow: hidden; padding: 10px; text-align: center; border: 1px solid #333; }
+        .model-card img { width: 100%; height: 120px; object-fit: cover; border-radius: 5px; background: #000; display: block; }
+        .model-name { font-size: 14px; margin: 10px 0; height: 35px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .btn-download { display: block; background: #28a745; color: white; text-decoration: none; padding: 8px; border-radius: 5px; font-size: 13px; }
         #subCategories { margin-top: 10px; border-top: 1px solid #444; padding-top: 10px; display: none; }
+        #searchInput { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 5px; border: none; background: #333; color: white; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <input type="text" id="searchInput" placeholder="Пошук моделі..." style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px; border: none;">
+    <input type="text" id="searchInput" placeholder="Пошук моделі за назвою або #тегом...">
 
     <div id="mainMenu" class="menu-container">
         <button class="btn-cat active" onclick="selectMain('all', this)">Всі моделі</button>
@@ -28,10 +28,10 @@
 
     <div id="subCategories" class="menu-container"></div>
 
-    <div id="modelsGrid" class="models-grid">
-        </div>
+    <div id="modelsGrid" class="models-grid"></div>
 
-   <script>
+    <script>
+        // ПОВНИЙ СПИСОК ВАШИХ КАТЕГОРІЙ
         const categoryData = {
             "#architecture_elements": ["#ceiling", "#wall", "#floor", "#columns", "#stairs", "#windows", "#doors", "#moulding", "#beams"],
             "#furniture": ["#sofa", "#chair", "#armchair", "#bed", "#table", "#wardrobe", "#cabinet", "#pouf", "#tv_wall", "#shelving"],
@@ -55,27 +55,24 @@
             try {
                 const response = await fetch(SHEET_CSV_URL);
                 const data = await response.text();
-                // Розбиваємо на рядки і прибираємо порожні
+                // Очищуємо від зайвих символів повернення каретки
                 const rows = data.split(/\r?\n/).filter(row => row.trim() !== "").slice(1);
 
                 allModels = rows.map(row => {
-                    // Більш надійний поділ CSV
-                    const columns = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
-                    
-                    // Функція для чистоти посилань
+                    const columns = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     const clean = (val) => val ? val.replace(/^"|"$/g, '').trim() : "";
-
+                    
                     return {
                         name: clean(columns[0]),
                         preview: clean(columns[1]),
                         archive: clean(columns[2]),
                         tags: clean(columns[3])
                     };
-                }).filter(m => m.name && m.preview);
+                }).filter(m => m.name);
 
                 renderModels(allModels);
             } catch (e) {
-                console.error("Помилка завантаження:", e);
+                console.error("Помилка завантаження даних:", e);
             }
         }
 
@@ -87,25 +84,17 @@
                 const card = document.createElement('div');
                 card.className = 'model-card';
                 
-                // Використовуємо loading="lazy" для стабільності
-                // crossOrigin="anonymous" допомагає з Google Drive
+                // Виправлена логіка: запобігаємо нескінченному морганню через onerror
                 card.innerHTML = `
                     <img src="${m.preview}" 
                          alt="${m.name}" 
-                         loading="lazy"
-                         crossOrigin="anonymous"
-                         onerror="handleImageError(this)">
+                         loading="lazy" 
+                         onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=No+Preview';">
                     <div class="model-name">${m.name}</div>
                     <a href="${m.archive}" class="btn-download" target="_blank">Завантажити</a>
                 `;
                 grid.appendChild(card);
             });
-        }
-
-        // Функція, щоб картинки не моргали при помилці
-        function handleImageError(img) {
-            img.onerror = null; // Зупиняємо цикл помилок
-            img.src = 'https://via.placeholder.com/150?text=No+Preview';
         }
 
         function selectMain(cat, btn) {
@@ -122,7 +111,7 @@
                 categoryData[cat].forEach(sub => {
                     const sBtn = document.createElement('button');
                     sBtn.className = 'btn-cat';
-                    sBtn.innerText = sub.replace('#', '').replace('_', ' ');
+                    sBtn.innerText = sub.replace('#', '').replace(/_/g, ' ');
                     sBtn.onclick = () => {
                         document.querySelectorAll('#subCategories .btn-cat').forEach(b => b.classList.remove('active'));
                         sBtn.classList.add('active');
@@ -138,32 +127,33 @@
         }
 
         function filterModels() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
             const filtered = allModels.filter(m => {
                 const tags = (m.tags || "").toLowerCase();
                 const name = (m.name || "").toLowerCase();
+                
                 const matchSearch = name.includes(query) || tags.includes(query);
                 const matchMain = currentMain === 'all' || tags.includes(currentMain.toLowerCase());
                 const matchSub = currentSub === 'all' || tags.includes(currentSub.toLowerCase());
+                
                 return matchSearch && matchMain && matchSub;
             });
             renderModels(filtered);
         }
 
-        // Створення головного меню
+        // Автоматичне створення кнопок головного меню
         const mainMenu = document.getElementById('mainMenu');
         Object.keys(categoryData).forEach(cat => {
             const btn = document.createElement('button');
             btn.className = 'btn-cat';
-            let displayName = cat.replace('#', '').replace('_', ' ').toUpperCase();
-            btn.innerText = displayName;
+            btn.innerText = cat.replace('#', '').replace(/_/g, ' ');
             btn.onclick = () => selectMain(cat, btn);
             mainMenu.appendChild(btn);
         });
 
         document.getElementById('searchInput').oninput = filterModels;
         
-        // Запуск
+        // Початкове завантаження
         loadModels();
     </script>
 </body>
