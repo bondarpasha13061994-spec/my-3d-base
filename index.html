@@ -3,33 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Model Library</title>
+    <title>3D Library PRO</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 15px; }
-        #searchInput { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #333; background: #1e1e1e; color: white; font-size: 16px; outline: none; box-sizing: border-box; }
+        body { font-family: -apple-system, sans-serif; background: #121212; color: white; margin: 0; padding: 15px; }
+        #searchInput { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #333; background: #1e1e1e; color: white; box-sizing: border-box; }
         .menu-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
-        .btn-cat { background: #2c2c2c; color: #bbb; border: 1px solid #3d3d3d; padding: 10px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; text-transform: uppercase; transition: 0.2s; }
-        .btn-cat.active { background: #007bff; color: white; border-color: #007bff; font-weight: bold; }
+        .btn-cat { background: #2c2c2c; color: #bbb; border: 1px solid #3d3d3d; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 12px; text-transform: uppercase; }
+        .btn-cat.active { background: #007bff; color: white; border-color: #007bff; }
         .models-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
-        .model-card { background: #1e1e1e; border-radius: 10px; overflow: hidden; padding: 12px; text-align: center; border: 1px solid #2c2c2c; display: flex; flex-direction: column; }
-        .img-wrapper { width: 100%; height: 130px; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 10px; position: relative; }
-        .model-card img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.3s; }
-        .model-card img.loaded { opacity: 1; }
-        .model-name { font-size: 14px; line-height: 1.3; height: 36px; overflow: hidden; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; color: #fff; }
-        .btn-download { background: #28a745; color: white; text-decoration: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-top: auto; }
-        #subCategories { padding-top: 15px; border-top: 1px solid #333; margin-top: 5px; display: none; }
+        .model-card { background: #1e1e1e; border-radius: 10px; padding: 12px; text-align: center; border: 1px solid #2c2c2c; }
+        .img-box { width: 100%; height: 130px; background: #000; border-radius: 6px; margin-bottom: 10px; overflow: hidden; }
+        .model-card img { width: 100%; height: 100%; object-fit: cover; border: none; }
+        .model-name { font-size: 14px; height: 36px; overflow: hidden; margin-bottom: 10px; color: #fff; }
+        .btn-download { display: block; background: #28a745; color: white; text-decoration: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; }
+        #subCategories { padding-top: 15px; border-top: 1px solid #333; display: none; }
     </style>
 </head>
 <body>
 
-    <input type="text" id="searchInput" placeholder="Пошук моделі...">
-
+    <input type="text" id="searchInput" placeholder="Пошук моделей...">
     <div id="mainMenu" class="menu-container">
         <button class="btn-cat active" onclick="selectMain('all', this)">Всі моделі</button>
     </div>
-
     <div id="subCategories" class="menu-container"></div>
-
     <div id="modelsGrid" class="models-grid"></div>
 
     <script>
@@ -50,48 +46,40 @@
         let currentMain = 'all';
         let currentSub = 'all';
 
+        // ВИКОРИСТОВУЄМО JSON ФОРМАТ ЗАМІСТЬ CSV
         const SHEET_ID = '1bcX0zQphJsAmFTySQ_iWYpNXgFnNZ5XGBHpGGvHI9K8';
-        const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+        const JSON_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
         async function loadModels() {
             try {
-                const res = await fetch(CSV_URL);
-                const csvText = await res.text();
+                const res = await fetch(JSON_URL);
+                const text = await res.text();
+                // Google додає зайвий текст на початку, прибираємо його
+                const json = JSON.parse(text.substr(47).slice(0, -2));
                 
-                // Надійний парсинг CSV рядків
-                const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== "");
-                
-                allModels = lines.slice(1).map(line => {
-                    // Регулярний вираз, який правильно ділить коми, ігноруючи ті, що в лапках
-                    const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    const clean = (s) => (s || "").replace(/^"|"$/g, '').trim();
-                    
-                    return {
-                        name: clean(cols[0]),
-                        preview: clean(cols[1]),
-                        archive: clean(cols[2]),
-                        tags: clean(cols[3])
-                    };
-                }).filter(m => m.name && m.preview);
+                const rows = json.table.rows;
+                allModels = rows.map(row => ({
+                    name: row.c[0] ? row.c[0].v : "",
+                    preview: row.c[1] ? row.c[1].v : "",
+                    archive: row.c[2] ? row.c[2].v : "",
+                    tags: row.c[3] ? row.c[3].v : ""
+                })).filter(m => m.name && m.preview);
 
                 renderModels(allModels);
             } catch (err) {
-                console.error("Помилка:", err);
+                console.error("Помилка завантаження:", err);
             }
         }
 
         function renderModels(models) {
             const grid = document.getElementById('modelsGrid');
             grid.innerHTML = '';
-            
             models.forEach(m => {
                 const card = document.createElement('div');
                 card.className = 'model-card';
                 card.innerHTML = `
-                    <div class="img-wrapper">
-                        <img src="${m.preview}" 
-                             onload="this.classList.add('loaded')"
-                             onerror="handleError(this)">
+                    <div class="img-box">
+                        <img src="${m.preview}" loading="lazy" onerror="this.parentElement.style.display='none'">
                     </div>
                     <div class="model-name">${m.name}</div>
                     <a href="${m.archive}" class="btn-download" target="_blank">Download</a>
@@ -100,24 +88,16 @@
             });
         }
 
-        function handleError(img) {
-            img.onerror = null;
-            img.src = 'https://via.placeholder.com/160x130/2c2c2c/888888?text=No+Preview';
-            img.classList.add('loaded');
-        }
-
-        // Керування меню
+        // Тут логіка меню (залишається такою ж, як раніше)
         function selectMain(cat, btn) {
             document.querySelectorAll('#mainMenu .btn-cat').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentMain = cat;
             currentSub = 'all';
-            
-            const subContainer = document.getElementById('subCategories');
-            subContainer.innerHTML = '';
-            
+            const subDiv = document.getElementById('subCategories');
+            subDiv.innerHTML = '';
             if (cat !== 'all' && categoryData[cat]) {
-                subContainer.style.display = 'flex';
+                subDiv.style.display = 'flex';
                 categoryData[cat].forEach(sub => {
                     const sBtn = document.createElement('button');
                     sBtn.className = 'btn-cat';
@@ -128,19 +108,17 @@
                         currentSub = sub;
                         filterModels();
                     };
-                    subContainer.appendChild(sBtn);
+                    subDiv.appendChild(sBtn);
                 });
-            } else {
-                subContainer.style.display = 'none';
-            }
+            } else { subDiv.style.display = 'none'; }
             filterModels();
         }
 
         function filterModels() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const filtered = allModels.filter(m => {
-                const t = (m.tags || "").toLowerCase();
-                const n = (m.name || "").toLowerCase();
+                const t = m.tags.toLowerCase();
+                const n = m.name.toLowerCase();
                 const mSearch = n.includes(query) || t.includes(query);
                 const mMain = currentMain === 'all' || t.includes(currentMain.toLowerCase());
                 const mSub = currentSub === 'all' || t.includes(currentSub.toLowerCase());
@@ -149,7 +127,6 @@
             renderModels(filtered);
         }
 
-        // Рендер головного меню
         const menu = document.getElementById('mainMenu');
         Object.keys(categoryData).forEach(cat => {
             const btn = document.createElement('button');
