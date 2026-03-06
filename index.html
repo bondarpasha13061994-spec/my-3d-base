@@ -3,32 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Library PRO</title>
+    <title>3D Model Library</title>
     <style>
-        body { font-family: -apple-system, sans-serif; background: #121212; color: white; margin: 0; padding: 15px; }
-        #searchInput { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #333; background: #1e1e1e; color: white; box-sizing: border-box; }
-        .menu-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
-        .btn-cat { background: #2c2c2c; color: #bbb; border: 1px solid #3d3d3d; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 12px; text-transform: uppercase; }
-        .btn-cat.active { background: #007bff; color: white; border-color: #007bff; }
-        .models-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
-        .model-card { background: #1e1e1e; border-radius: 10px; padding: 12px; text-align: center; border: 1px solid #2c2c2c; }
-        .img-box { width: 100%; height: 130px; background: #000; border-radius: 6px; margin-bottom: 10px; overflow: hidden; }
-        .model-card img { width: 100%; height: 100%; object-fit: cover; border: none; }
-        .model-name { font-size: 14px; height: 36px; overflow: hidden; margin-bottom: 10px; color: #fff; }
-        .btn-download { display: block; background: #28a745; color: white; text-decoration: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; }
-        #subCategories { padding-top: 15px; border-top: 1px solid #333; display: none; }
+        /* Основні стилі для охайного вигляду */
+        body { font-family: sans-serif; background: #1a1a1a; color: white; margin: 0; padding: 10px; }
+        .menu-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+        .btn-cat { background: #333; color: white; border: 1px solid #444; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+        .btn-cat.active { background: #007bff; border-color: #007bff; }
+        .models-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+        .model-card { background: #2a2a2a; border-radius: 8px; overflow: hidden; padding: 10px; text-align: center; }
+        .model-card img { width: 100%; height: 120px; object-fit: cover; border-radius: 5px; background: #000; }
+        .model-name { font-size: 14px; margin: 10px 0; height: 35px; overflow: hidden; }
+        .btn-download { display: block; background: #28a745; color: white; text-decoration: none; padding: 8px; border-radius: 5px; font-size: 13px; }
+        #subCategories { margin-top: 10px; border-top: 1px solid #444; padding-top: 10px; display: none; }
     </style>
 </head>
 <body>
 
-    <input type="text" id="searchInput" placeholder="Пошук моделей...">
+    <input type="text" id="searchInput" placeholder="Пошук моделі..." style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px; border: none;">
+
     <div id="mainMenu" class="menu-container">
         <button class="btn-cat active" onclick="selectMain('all', this)">Всі моделі</button>
     </div>
+
     <div id="subCategories" class="menu-container"></div>
-    <div id="modelsGrid" class="models-grid"></div>
+
+    <div id="modelsGrid" class="models-grid">
+        </div>
 
     <script>
+        // ВАШІ КАТЕГОРІЇ
         const categoryData = {
             "#architecture_elements": ["#ceiling", "#wall", "#floor", "#columns", "#stairs", "#windows", "#doors", "#moulding", "#beams"],
             "#furniture": ["#sofa", "#chair", "#armchair", "#bed", "#table", "#wardrobe", "#cabinet", "#pouf", "#tv_wall", "#shelving"],
@@ -46,28 +50,28 @@
         let currentMain = 'all';
         let currentSub = 'all';
 
-        // ВИКОРИСТОВУЄМО JSON ФОРМАТ ЗАМІСТЬ CSV
-        const SHEET_ID = '1bcX0zQphJsAmFTySQ_iWYpNXgFnNZ5XGBHpGGvHI9K8';
-        const JSON_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+        // ПІДКЛЮЧЕННЯ ДО ТАБЛИЦІ (CSV формат)
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1bcX0zQphJsAmFTySQ_iWYpNXgFnNZ5XGBHpGGvHI9K8/export?format=csv';
 
         async function loadModels() {
             try {
-                const res = await fetch(JSON_URL);
-                const text = await res.text();
-                // Google додає зайвий текст на початку, прибираємо його
-                const json = JSON.parse(text.substr(47).slice(0, -2));
-                
-                const rows = json.table.rows;
-                allModels = rows.map(row => ({
-                    name: row.c[0] ? row.c[0].v : "",
-                    preview: row.c[1] ? row.c[1].v : "",
-                    archive: row.c[2] ? row.c[2].v : "",
-                    tags: row.c[3] ? row.c[3].v : ""
-                })).filter(m => m.name && m.preview);
+                const response = await fetch(SHEET_CSV_URL);
+                const data = await response.text();
+                const rows = data.split('\n').slice(1); // Пропускаємо перший рядок з заголовками
+
+                allModels = rows.map(row => {
+                    const columns = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // Правильний поділ CSV
+                    return {
+                        name: columns[0]?.replace(/"/g, ''),
+                        preview: columns[1]?.replace(/"/g, ''),
+                        archive: columns[2]?.replace(/"/g, ''),
+                        tags: columns[3]?.replace(/"/g, '')
+                    };
+                }).filter(m => m.name);
 
                 renderModels(allModels);
-            } catch (err) {
-                console.error("Помилка завантаження:", err);
+            } catch (e) {
+                console.error("Помилка завантаження:", e);
             }
         }
 
@@ -78,30 +82,30 @@
                 const card = document.createElement('div');
                 card.className = 'model-card';
                 card.innerHTML = `
-                    <div class="img-box">
-                        <img src="${m.preview}" loading="lazy" onerror="this.parentElement.style.display='none'">
-                    </div>
+                    <img src="${m.preview}" alt="Loading..." onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
                     <div class="model-name">${m.name}</div>
-                    <a href="${m.archive}" class="btn-download" target="_blank">Download</a>
+                    <a href="${m.archive}" class="btn-download" target="_blank">Завантажити</a>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        // Тут логіка меню (залишається такою ж, як раніше)
+        // Логіка кнопок
         function selectMain(cat, btn) {
             document.querySelectorAll('#mainMenu .btn-cat').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentMain = cat;
             currentSub = 'all';
+            
             const subDiv = document.getElementById('subCategories');
             subDiv.innerHTML = '';
+            
             if (cat !== 'all' && categoryData[cat]) {
                 subDiv.style.display = 'flex';
                 categoryData[cat].forEach(sub => {
                     const sBtn = document.createElement('button');
                     sBtn.className = 'btn-cat';
-                    sBtn.innerText = sub.replace('#', '').replace(/_/g, ' ');
+                    sBtn.innerText = sub.replace('#', '').replace('_', ' ');
                     sBtn.onclick = () => {
                         document.querySelectorAll('#subCategories .btn-cat').forEach(b => b.classList.remove('active'));
                         sBtn.classList.add('active');
@@ -110,30 +114,33 @@
                     };
                     subDiv.appendChild(sBtn);
                 });
-            } else { subDiv.style.display = 'none'; }
+            } else {
+                subDiv.style.display = 'none';
+            }
             filterModels();
         }
 
         function filterModels() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const filtered = allModels.filter(m => {
-                const t = m.tags.toLowerCase();
-                const n = m.name.toLowerCase();
-                const mSearch = n.includes(query) || t.includes(query);
-                const mMain = currentMain === 'all' || t.includes(currentMain.toLowerCase());
-                const mSub = currentSub === 'all' || t.includes(currentSub.toLowerCase());
-                return mSearch && mMain && mSub;
+                const tags = (m.tags || "").toLowerCase();
+                const name = (m.name || "").toLowerCase();
+                const matchSearch = name.includes(query) || tags.includes(query);
+                const matchMain = currentMain === 'all' || tags.includes(currentMain.toLowerCase());
+                const matchSub = currentSub === 'all' || tags.includes(currentSub.toLowerCase());
+                return matchSearch && matchMain && matchSub;
             });
             renderModels(filtered);
         }
 
-        const menu = document.getElementById('mainMenu');
+        // Ініціалізація меню
+        const mainMenu = document.getElementById('mainMenu');
         Object.keys(categoryData).forEach(cat => {
             const btn = document.createElement('button');
             btn.className = 'btn-cat';
-            btn.innerText = cat.replace('#', '').replace(/_/g, ' ');
+            btn.innerText = cat.replace('#', '').replace('_', ' ').toUpperCase();
             btn.onclick = () => selectMain(cat, btn);
-            menu.appendChild(btn);
+            mainMenu.appendChild(btn);
         });
 
         document.getElementById('searchInput').oninput = filterModels;
