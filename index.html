@@ -5,58 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Model Base</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         body { font-family: sans-serif; background: #1c1c1d; color: white; margin: 0; padding: 15px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .card { background: #2c2c2e; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
-        .card img { width: 100%; height: 120px; object-fit: cover; }
-        .card-info { padding: 10px; }
-        .card-title { font-size: 14px; font-weight: bold; margin-bottom: 8px; }
-        .btn { 
-            background: #007aff; color: white; border: none; padding: 8px; 
-            border-radius: 6px; cursor: pointer; text-decoration: none; 
-            text-align: center; font-size: 12px; display: block;
-        }
-        .search { width: 100%; padding: 10px; border-radius: 8px; border: none; margin-bottom: 20px; background: #2c2c2e; color: white; }
+        .card { background: #2c2c2e; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; height: 100%; border: 1px solid #3a3a3c; }
+        .card img { width: 100%; height: 120px; object-fit: cover; background: #1c1c1d; }
+        .card-info { padding: 10px; display: flex; flex-direction: column; flex-grow: 1; }
+        .card-title { font-size: 13px; font-weight: bold; margin-bottom: 8px; min-height: 32px; line-height: 1.2; }
+        .btn { background: #007aff; color: white; border: none; padding: 10px; border-radius: 8px; text-decoration: none; text-align: center; font-size: 12px; margin-top: auto; font-weight: bold; }
+        .search { width: 100%; padding: 12px; border-radius: 10px; border: none; margin-bottom: 20px; background: #2c2c2e; color: white; box-sizing: border-box; outline: none; border: 1px solid #3a3a3c; }
+        #loader { text-align: center; padding: 20px; color: #8e8e93; }
     </style>
 </head>
 <body>
-    <input type="text" class="search" placeholder="Пошук моделей...">
-
-    <div class="grid" id="catalog">
-        </div>
+    <input type="text" id="searchInput" class="search" placeholder="Пошук моделей за назвою чи тегами...">
+    <div id="loader">Завантаження бази моделей...</div>
+    <div class="grid" id="catalog"></div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Розгортає вікно на весь екран
+        tg.expand();
 
-        // Ваші 20 тестових моделей (приклад структури)
-        const models = [
-            {
-                name: "Modern Sofa Velvet",
-                preview: "https://via.placeholder.com/300x200", // Замініть на реальне фото
-                link: "https://drive.google.com/uc?id=YOUR_FILE_ID_1&export=download"
-            },
-            {
-                name: "Minimalist Lamp",
-                preview: "https://via.placeholder.com/300x200",
-                link: "https://drive.google.com/uc?id=YOUR_FILE_ID_2&export=download"
+        // Ваше посилання на CSV версію таблиці
+        const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLjYuSElQsiwhHYMm_ZJpYX1oW0Y4KiHAaKrdmaalvl2qZipX1hephAhcE3w0MdHXTfqsOVnFNp62J/pub?output=csv';
+
+        let allModels = [];
+
+        function renderModels(models) {
+            const container = document.getElementById('catalog');
+            const loader = document.getElementById('loader');
+            loader.style.display = 'none';
+            container.innerHTML = '';
+            
+            if (models.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1/3; text-align: center; color: #8e8e93;">Нічого не знайдено</div>';
+                return;
             }
-        ];
 
-        const container = document.getElementById('catalog');
+            models.forEach(model => {
+                // Очищення посилань на випадок пробілів у таблиці
+                const previewUrl = model.preview ? model.preview.trim() : '';
+                const downloadLink = model.link ? model.link.trim() : '#';
+                const name = model.name ? model.name.trim() : 'Без назви';
 
-        models.forEach(model => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-                <img src="${model.preview}" alt="${model.name}">
-                <div class="card-info">
-                    <div class="card-title">${model.name}</div>
-                    <a href="${model.link}" class="btn" target="_blank">Завантажити (GDrive)</a>
-                </div>
-            `;
-            container.appendChild(card);
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <img src="${previewUrl}" alt="${name}" onerror="this.src='https://via.placeholder.com/300x200?text=3D+Model'">
+                    <div class="card-info">
+                        <div class="card-title">${name}</div>
+                        <a href="${downloadLink}" class="btn" target="_blank">Завантажити</a>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Завантаження даних
+        Papa.parse(sheetUrl, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                allModels = results.data.filter(row => row.name); // Фільтруємо порожні рядки
+                renderModels(allModels);
+            },
+            error: function(err) {
+                document.getElementById('loader').innerText = 'Помилка завантаження даних.';
+                console.error(err);
+            }
+        });
+
+        // Реалізація пошуку
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = allModels.filter(m => 
+                (m.name && m.name.toLowerCase().includes(query)) || 
+                (m.tags && m.tags.toLowerCase().includes(query))
+            );
+            renderModels(filtered);
         });
     </script>
 </body>
