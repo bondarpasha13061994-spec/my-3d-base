@@ -5,27 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Model Library</title>
     <style>
+        /* Основні стилі */
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 15px; }
+        
         #searchInput { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #333; background: #1e1e1e; color: white; font-size: 16px; box-sizing: border-box; outline: none; }
+        
         .menu-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        
         .btn-cat { background: #2c2c2c; color: #bbb; border: 1px solid #3d3d3d; padding: 10px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; text-transform: uppercase; transition: 0.2s; }
         .btn-cat.active { background: #007bff; color: white; border-color: #007bff; font-weight: bold; }
+        
         .models-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+        
         .model-card { background: #1e1e1e; border-radius: 10px; overflow: hidden; padding: 12px; text-align: center; border: 1px solid #2c2c2c; display: flex; flex-direction: column; }
-        .img-wrapper { width: 100%; height: 130px; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 10px; }
+        
+        .img-wrapper { width: 100%; height: 130px; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 10px; cursor: zoom-in; }
         .model-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        
         .model-name { font-size: 14px; line-height: 1.3; height: 36px; overflow: hidden; margin-bottom: 12px; color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        
         .btn-download { background: #28a745; color: white; text-decoration: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-top: auto; }
+        
         #subCategories { padding-top: 15px; border-top: 1px solid #333; margin-top: 5px; display: none; }
+
+        /* Стилі для збільшеної картинки (Modal) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            align-items: center; justify-content: center;
+            cursor: zoom-out;
+        }
+        .modal img {
+            max-width: 95%;
+            max-height: 95%;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
     </style>
 </head>
 <body>
 
-    <input type="text" id="searchInput" placeholder="Пошук моделі...">
+    <div id="imageModal" class="modal" onclick="this.style.display='none'">
+        <img id="modalImg" src="">
+    </div>
+
+    <input type="text" id="searchInput" placeholder="Пошук моделі за назвою або #тегом...">
+    
     <div id="mainMenu" class="menu-container">
         <button class="btn-cat active" onclick="selectMain('all', this)">Всі моделі</button>
     </div>
+
     <div id="subCategories" class="menu-container"></div>
+
     <div id="modelsGrid" class="models-grid"></div>
 
     <script>
@@ -59,7 +94,7 @@
                     let rawPreview = row.c[1] ? String(row.c[1].v) : "";
                     let finalPreview = rawPreview;
 
-                    // ПЕРЕТВОРЕННЯ ПОСИЛАННЯ НА ШВИДКЕ ПРЕВ'Ю
+                    // Обробка ID для швидкого завантаження прев'ю
                     if (rawPreview.includes('drive.google.com')) {
                         let fileId = "";
                         if (rawPreview.includes('id=')) {
@@ -79,7 +114,7 @@
                 }).filter(m => m.name !== "Без назви");
 
                 renderModels(allModels);
-            } catch (err) { console.error("Помилка:", err); }
+            } catch (err) { console.error("Помилка завантаження:", err); }
         }
 
         function renderModels(models) {
@@ -89,9 +124,8 @@
                 const card = document.createElement('div');
                 card.className = 'model-card';
                 card.innerHTML = `
-                    <div class="img-wrapper">
-                        <img src="${m.preview}" 
-                             onerror="this.src='https://via.placeholder.com/160x130/2c2c2c/888888?text=No+Preview'">
+                    <div class="img-wrapper" onclick="openModal('${m.preview}')">
+                        <img src="${m.preview}" loading="lazy" onerror="this.src='https://via.placeholder.com/160x130/2c2c2c/888888?text=No+Preview'">
                     </div>
                     <div class="model-name">${m.name}</div>
                     <a href="${m.archive}" class="btn-download" target="_blank">Download</a>
@@ -100,7 +134,13 @@
             });
         }
 
-        // Логіка меню
+        function openModal(src) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImg');
+            modal.style.display = 'flex';
+            modalImg.src = src;
+        }
+
         function selectMain(cat, btn) {
             document.querySelectorAll('#mainMenu .btn-cat').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -108,6 +148,7 @@
             currentSub = 'all';
             const subDiv = document.getElementById('subCategories');
             subDiv.innerHTML = '';
+            
             if (cat !== 'all' && categoryData[cat]) {
                 subDiv.style.display = 'flex';
                 categoryData[cat].forEach(sub => {
