@@ -10,12 +10,12 @@
         body { font-family: sans-serif; background: #1c1c1d; color: white; margin: 0; padding: 15px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .card { background: #2c2c2e; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; height: 100%; border: 1px solid #3a3a3c; }
-        .card img { width: 100%; height: 120px; object-fit: cover; background: #1c1c1d; }
+        .card img { width: 100%; height: 120px; border-bottom: 1px solid #3a3a3c; object-fit: cover; background: #1c1c1d; }
         .card-info { padding: 10px; display: flex; flex-direction: column; flex-grow: 1; }
-        .card-title { font-size: 13px; font-weight: bold; margin-bottom: 8px; min-height: 32px; line-height: 1.2; }
+        .card-title { font-size: 13px; font-weight: bold; margin-bottom: 8px; min-height: 32px; line-height: 1.2; color: #ffffff; }
         .btn { background: #007aff; color: white; border: none; padding: 10px; border-radius: 8px; text-decoration: none; text-align: center; font-size: 12px; margin-top: auto; font-weight: bold; }
         .search { width: 100%; padding: 12px; border-radius: 10px; border: none; margin-bottom: 20px; background: #2c2c2e; color: white; box-sizing: border-box; outline: none; border: 1px solid #3a3a3c; }
-        #loader { text-align: center; padding: 20px; color: #8e8e93; }
+        #loader { text-align: center; padding: 20px; color: #8e8e93; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -27,7 +27,7 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Ваше посилання на CSV версію таблиці
+        // ВИПРАВЛЕНО: Пряме посилання на CSV дані
         const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLjYuSElQsiwhHYMm_ZJpYX1oW0Y4KiHAaKrdmaalvl2qZipX1hephAhcE3w0MdHXTfqsOVnFNp62J/pub?output=csv';
 
         let allModels = [];
@@ -39,15 +39,14 @@
             container.innerHTML = '';
             
             if (models.length === 0) {
-                container.innerHTML = '<div style="grid-column: 1/3; text-align: center; color: #8e8e93;">Нічого не знайдено</div>';
+                container.innerHTML = '<div style="grid-column: 1/3; text-align: center; color: #8e8e93; margin-top: 20px;">Нічого не знайдено</div>';
                 return;
             }
 
             models.forEach(model => {
-                // Очищення посилань на випадок пробілів у таблиці
+                const name = model.name ? model.name.trim() : 'Без назви';
                 const previewUrl = model.preview ? model.preview.trim() : '';
                 const downloadLink = model.link ? model.link.trim() : '#';
-                const name = model.name ? model.name.trim() : 'Без назви';
 
                 const card = document.createElement('div');
                 card.className = 'card';
@@ -62,22 +61,24 @@
             });
         }
 
-        // Завантаження даних
+        // Завантаження даних через PapaParse
         Papa.parse(sheetUrl, {
             download: true,
             header: true,
             skipEmptyLines: true,
             complete: function(results) {
-                allModels = results.data.filter(row => row.name); // Фільтруємо порожні рядки
+                console.log("Дані отримано:", results.data);
+                // Фільтруємо рядки, де немає імені
+                allModels = results.data.filter(row => row.name && row.name.trim() !== "");
                 renderModels(allModels);
             },
             error: function(err) {
-                document.getElementById('loader').innerText = 'Помилка завантаження даних.';
-                console.error(err);
+                document.getElementById('loader').innerText = 'Помилка доступу до таблиці. Перевірте публікацію CSV.';
+                console.error("Помилка PapaParse:", err);
             }
         });
 
-        // Реалізація пошуку
+        // Пошук
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
             const filtered = allModels.filter(m => 
