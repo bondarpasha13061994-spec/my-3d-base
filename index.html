@@ -61,13 +61,37 @@
 
         // Дані категорій з вашого документа
         const categoryData = {
-            "Меблі": ["Крісла", "Ліжка", "Тумби", "Шафи", "Стільці", "Комоди", "Дивани", "Пуфи", "Столи"],
-            "Санвузол": ["Змішувачі", "Ванни", "Кераміка", "Душові", "Унітази", "Раковини"],
-            "Декор": ["Килими", "Штори", "Картини", "Годинники", "Вази", "Дзеркала"],
-            "Освітлення": ["Люстри", "Бра", "Торшери", "Настільні лампи", "Вуличне"],
-            "Кухня": ["Гарнітури", "Техніка", "Мийки", "Острови"],
-            "Природа": ["Дерева", "Кущі", "Квіти", "Трава"]
-        };
+    "#architecture_elements": [
+        "#ceiling", "#wall", "#floor", "#columns", "#stairs", "#windows", "#doors", "#moulding", "#beams"
+    ],
+    "#furniture": [
+        "#sofa", "#chair", "#armchair", "#bed", "#table", "#wardrobe", "#cabinet", "#pouf", "#tv_wall", "#shelving"
+    ],
+    "#lighting": [
+        "#pendant_lamp", "#chandelier", "#wall_lamp", "#floor_lamp", "#table_lamp", "#street_light", "#technical_light"
+    ],
+    "#decor": [
+        "#rugs", "#curtains", "#paintings", "#clocks", "#vases", "#mirrors", "#plants_indoor", "#books", "#candles", "#sculptures"
+    ],
+    "#bathroom": [
+        "#taps", "#bathtubs", "#ceramics", "#showers", "#toilets", "#sinks", "#bathroom_decor", "#towel_rails", "#bathroom_accessories"
+    ],
+    "#kitchen": [
+        "#kitchen_sets", "#appliances", "#sinks_kitchen", "#kitchen_islands", "#kitchen_decor", "#tableware", "#kitchen_tools"
+    ],
+    "#nature": [
+        "#trees", "#bushes", "#flowers", "#grass", "#rocks", "#stumps"
+    ],
+    "#materials": [
+        "#wood", "#stone", "#metal", "#fabric", "#glass", "#concrete", "#tiles", "#wallpaper"
+    ],
+    "#outdoor": [
+        "#garden_furniture", "#paving", "#fences", "#pools", "#pavilions"
+    ],
+    "#technology": [
+        "#tv", "#audio", "#computers", "#gadgets", "#kitchen_appliances"
+    ]
+};
 
         const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLjYuSElQsiwhHYMm_ZJpYX1oW0Y4KiHAaKrdmaalvl2qZipX1hephAhcE3w0MdHXTfqsOVnFNp62J/pub?output=csv';
         let allModels = [];
@@ -75,14 +99,18 @@
         let currentSub = 'all';
 
         // Ініціалізація головного меню
-        const mainMenuDiv = document.getElementById('mainMenu');
-        Object.keys(categoryData).forEach(cat => {
-            const btn = document.createElement('button');
-            btn.className = 'btn-cat';
-            btn.innerText = cat;
-            btn.onclick = () => selectMain(cat, btn);
-            mainMenuDiv.appendChild(btn);
-        });
+       const mainMenuDiv = document.getElementById('mainMenu');
+Object.keys(categoryData).forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'btn-cat';
+    
+    // Робимо текст гарним: прибираємо #, замінюємо _ на пробіл, робимо першу букву великою
+    let displayName = cat.replace('#', '').replace(/_/g, ' ');
+    btn.innerText = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+    
+    btn.onclick = () => selectMain(cat, btn); // Передаємо оригінальний тег # для фільтрації
+    mainMenuDiv.appendChild(btn);
+});
 
         function selectMain(cat, btn) {
             currentMain = cat;
