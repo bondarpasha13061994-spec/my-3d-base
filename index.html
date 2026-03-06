@@ -31,8 +31,7 @@
     <div id="modelsGrid" class="models-grid">
         </div>
 
-    <script>
-        // ВАШІ КАТЕГОРІЇ
+   <script>
         const categoryData = {
             "#architecture_elements": ["#ceiling", "#wall", "#floor", "#columns", "#stairs", "#windows", "#doors", "#moulding", "#beams"],
             "#furniture": ["#sofa", "#chair", "#armchair", "#bed", "#table", "#wardrobe", "#cabinet", "#pouf", "#tv_wall", "#shelving"],
@@ -50,24 +49,29 @@
         let currentMain = 'all';
         let currentSub = 'all';
 
-        // ПІДКЛЮЧЕННЯ ДО ТАБЛИЦІ (CSV формат)
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1bcX0zQphJsAmFTySQ_iWYpNXgFnNZ5XGBHpGGvHI9K8/export?format=csv';
 
         async function loadModels() {
             try {
                 const response = await fetch(SHEET_CSV_URL);
                 const data = await response.text();
-                const rows = data.split('\n').slice(1); // Пропускаємо перший рядок з заголовками
+                // Розбиваємо на рядки і прибираємо порожні
+                const rows = data.split(/\r?\n/).filter(row => row.trim() !== "").slice(1);
 
                 allModels = rows.map(row => {
-                    const columns = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // Правильний поділ CSV
+                    // Більш надійний поділ CSV
+                    const columns = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
+                    
+                    // Функція для чистоти посилань
+                    const clean = (val) => val ? val.replace(/^"|"$/g, '').trim() : "";
+
                     return {
-                        name: columns[0]?.replace(/"/g, ''),
-                        preview: columns[1]?.replace(/"/g, ''),
-                        archive: columns[2]?.replace(/"/g, ''),
-                        tags: columns[3]?.replace(/"/g, '')
+                        name: clean(columns[0]),
+                        preview: clean(columns[1]),
+                        archive: clean(columns[2]),
+                        tags: clean(columns[3])
                     };
-                }).filter(m => m.name);
+                }).filter(m => m.name && m.preview);
 
                 renderModels(allModels);
             } catch (e) {
@@ -78,11 +82,19 @@
         function renderModels(models) {
             const grid = document.getElementById('modelsGrid');
             grid.innerHTML = '';
+            
             models.forEach(m => {
                 const card = document.createElement('div');
                 card.className = 'model-card';
+                
+                // Використовуємо loading="lazy" для стабільності
+                // crossOrigin="anonymous" допомагає з Google Drive
                 card.innerHTML = `
-                    <img src="${m.preview}" alt="Loading..." onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
+                    <img src="${m.preview}" 
+                         alt="${m.name}" 
+                         loading="lazy"
+                         crossOrigin="anonymous"
+                         onerror="handleImageError(this)">
                     <div class="model-name">${m.name}</div>
                     <a href="${m.archive}" class="btn-download" target="_blank">Завантажити</a>
                 `;
@@ -90,7 +102,12 @@
             });
         }
 
-        // Логіка кнопок
+        // Функція, щоб картинки не моргали при помилці
+        function handleImageError(img) {
+            img.onerror = null; // Зупиняємо цикл помилок
+            img.src = 'https://via.placeholder.com/150?text=No+Preview';
+        }
+
         function selectMain(cat, btn) {
             document.querySelectorAll('#mainMenu .btn-cat').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -133,17 +150,20 @@
             renderModels(filtered);
         }
 
-        // Ініціалізація меню
+        // Створення головного меню
         const mainMenu = document.getElementById('mainMenu');
         Object.keys(categoryData).forEach(cat => {
             const btn = document.createElement('button');
             btn.className = 'btn-cat';
-            btn.innerText = cat.replace('#', '').replace('_', ' ').toUpperCase();
+            let displayName = cat.replace('#', '').replace('_', ' ').toUpperCase();
+            btn.innerText = displayName;
             btn.onclick = () => selectMain(cat, btn);
             mainMenu.appendChild(btn);
         });
 
         document.getElementById('searchInput').oninput = filterModels;
+        
+        // Запуск
         loadModels();
     </script>
 </body>
