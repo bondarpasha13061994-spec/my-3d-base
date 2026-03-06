@@ -3,34 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Model Base</title>
+    <title>3D Design Base</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        body { font-family: sans-serif; background: #1c1c1d; color: white; margin: 0; padding: 15px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .card { background: #2c2c2e; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; height: 100%; border: 1px solid #3a3a3c; }
-        .card img { width: 100%; height: 120px; border-bottom: 1px solid #3a3a3c; object-fit: cover; background: #1c1c1d; }
-        .card-info { padding: 10px; display: flex; flex-direction: column; flex-grow: 1; }
-        .card-title { font-size: 13px; font-weight: bold; margin-bottom: 8px; min-height: 32px; line-height: 1.2; color: #ffffff; }
-        .btn { background: #007aff; color: white; border: none; padding: 10px; border-radius: 8px; text-decoration: none; text-align: center; font-size: 12px; margin-top: auto; font-weight: bold; }
-        .search { width: 100%; padding: 12px; border-radius: 10px; border: none; margin-bottom: 20px; background: #2c2c2e; color: white; box-sizing: border-box; outline: none; border: 1px solid #3a3a3c; }
-        #loader { text-align: center; padding: 20px; color: #8e8e93; font-size: 14px; }
+        :root {
+            --bg-color: #1c1c1d;
+            --secondary-bg: #2c2c2e;
+            --accent-color: #007aff;
+            --text-main: #ffffff;
+            --text-muted: #8e8e93;
+            --border-color: #3a3a3c;
+        }
+
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header & Search */
+        .header {
+            padding: 15px;
+            background: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            background: var(--secondary-bg);
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 200px;
+            background: var(--bg-color);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            padding: 10px;
+            display: none; /* Hidden on mobile by default */
+        }
+
+        @media (min-width: 768px) {
+            .sidebar { display: block; }
+        }
+
+        .nav-item {
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: var(--secondary-bg);
+            color: var(--accent-color);
+        }
+
+        /* Mobile Category Selector */
+        .mobile-nav {
+            padding: 10px;
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        @media (min-width: 768px) {
+            .mobile-nav { display: none; }
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+        }
+
+        .card {
+            background: var(--secondary-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            background: #000;
+        }
+
+        .card-body { padding: 10px; flex: 1; display: flex; flex-direction: column; }
+        .card-title { font-size: 12px; font-weight: bold; margin-bottom: 10px; height: 32px; overflow: hidden; }
+        .download-btn {
+            background: var(--accent-color);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        #loader { text-align: center; margin-top: 50px; color: var(--text-muted); }
     </style>
 </head>
 <body>
-    <input type="text" id="searchInput" class="search" placeholder="Пошук моделей за назвою чи тегами...">
-    <div id="loader">Завантаження бази моделей...</div>
-    <div class="grid" id="catalog"></div>
+
+    <div class="header">
+        <input type="text" id="searchInput" class="search-box" placeholder="Пошук моделі...">
+    </div>
+
+    <div class="mobile-nav" id="mobileNav">
+        <div class="nav-item active" onclick="setCategory('all', this)">Всі</div>
+    </div>
+
+    <div class="main-layout">
+        <div class="sidebar" id="sidebarNav">
+            <div class="nav-item active" onclick="setCategory('all', this)">Усі категорії</div>
+        </div>
+
+        <div class="content">
+            <div id="loader">Завантаження бази...</div>
+            <div class="grid" id="catalog"></div>
+        </div>
+    </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ВИПРАВЛЕНО: Пряме посилання на CSV дані
-        const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLjYuSElQsiwhHYMm_ZJpYX1oW0Y4KiHAaKrdmaalvl2qZipX1hephAhcE3w0MdHXTfqsOVnFNp62J/pub?gid=0&single=true&output=csv';
+        const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLjYuSElQsiwhHYMm_ZJpYX1oW0Y4KiHAaKrdmaalvl2qZipX1hephAhcE3w0MdHXTfqsOVnFNp62J/pub?output=csv';
+        
+        // Список категорій з вашого файлу
+        const categories = [
+            "Арх. елементи", "Санвузол", "Декор", "Для дітей", 
+            "Меблі", "Кухня", "Освітлення", "Матеріали", 
+            "Природа", "Outdoor", "Технології", "Транспорт"
+        ];
 
         let allModels = [];
+        let currentCategory = 'all';
+
+        // Ініціалізація меню
+        const sidebar = document.getElementById('sidebarNav');
+        const mobileNav = document.getElementById('mobileNav');
+
+        categories.forEach(cat => {
+            const div = document.createElement('div');
+            div.className = 'nav-item';
+            div.innerText = cat;
+            div.onclick = (e) => setCategory(cat, e.target);
+            
+            sidebar.appendChild(div.cloneNode(true));
+            mobileNav.appendChild(div);
+        });
+
+        function setCategory(cat, el) {
+            currentCategory = cat;
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            // Активуємо у обох меню
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if(item.innerText === cat || (cat === 'all' && item.innerText.includes('Всі'))) {
+                    item.classList.add('active');
+                }
+            });
+            filterModels();
+        }
 
         function renderModels(models) {
             const container = document.getElementById('catalog');
@@ -38,55 +208,41 @@
             loader.style.display = 'none';
             container.innerHTML = '';
             
-            if (models.length === 0) {
-                container.innerHTML = '<div style="grid-column: 1/3; text-align: center; color: #8e8e93; margin-top: 20px;">Нічого не знайдено</div>';
-                return;
-            }
-
             models.forEach(model => {
-                const name = model.name ? model.name.trim() : 'Без назви';
-                const previewUrl = model.preview ? model.preview.trim() : '';
-                const downloadLink = model.link ? model.link.trim() : '#';
-
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
-                    <img src="${previewUrl}" alt="${name}" onerror="this.src='https://via.placeholder.com/300x200?text=3D+Model'">
-                    <div class="card-info">
-                        <div class="card-title">${name}</div>
-                        <a href="${downloadLink}" class="btn" target="_blank">Завантажити</a>
+                    <img src="${model.preview}" onerror="this.src='https://via.placeholder.com/150x120?text=No+Image'">
+                    <div class="card-body">
+                        <div class="card-title">${model.name}</div>
+                        <a href="${model.link}" class="download-btn" target="_blank">Завантажити</a>
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        // Завантаження даних через PapaParse
+        function filterModels() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allModels.filter(m => {
+                const matchSearch = m.name.toLowerCase().includes(query) || (m.tags && m.tags.toLowerCase().includes(query));
+                const matchCat = currentCategory === 'all' || (m.tags && m.tags.toLowerCase().includes(currentCategory.toLowerCase()));
+                return matchSearch && matchCat;
+            });
+            renderModels(filtered);
+        }
+
         Papa.parse(sheetUrl, {
             download: true,
             header: true,
             skipEmptyLines: true,
             complete: function(results) {
-                console.log("Дані отримано:", results.data);
-                // Фільтруємо рядки, де немає імені
-                allModels = results.data.filter(row => row.name && row.name.trim() !== "");
+                allModels = results.data.filter(row => row.name);
                 renderModels(allModels);
-            },
-            error: function(err) {
-                document.getElementById('loader').innerText = 'Помилка доступу до таблиці. Перевірте публікацію CSV.';
-                console.error("Помилка PapaParse:", err);
             }
         });
 
-        // Пошук
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-            const filtered = allModels.filter(m => 
-                (m.name && m.name.toLowerCase().includes(query)) || 
-                (m.tags && m.tags.toLowerCase().includes(query))
-            );
-            renderModels(filtered);
-        });
+        document.getElementById('searchInput').addEventListener('input', filterModels);
     </script>
 </body>
 </html>
