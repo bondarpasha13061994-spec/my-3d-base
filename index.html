@@ -50,18 +50,35 @@
         // Використовуємо формат tq? - він набагато стабільніший за CSV
         const JSON_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-        async function loadModels() {
+       async function loadModels() {
             try {
                 const res = await fetch(JSON_URL);
                 const text = await res.text();
                 const json = JSON.parse(text.substr(47).slice(0, -2));
                 
-                allModels = json.table.rows.map(row => ({
-                    name: row.c[0] ? String(row.c[0].v) : "",
-                    preview: row.c[1] ? String(row.c[1].v) : "",
-                    archive: row.c[2] ? String(row.c[2].v) : "",
-                    tags: row.c[3] ? String(row.c[3].v) : ""
-                })).filter(m => m.name && m.preview.includes('http'));
+                allModels = json.table.rows.map(row => {
+                    let rawPreview = row.c[1] ? String(row.c[1].v) : "";
+                    let finalPreview = rawPreview;
+
+                    // МАГІЯ: Перетворюємо будь-яке посилання Google Drive на швидку картинку
+                    if (rawPreview.includes('drive.google.com')) {
+                        let fileId = "";
+                        if (rawPreview.includes('id=')) {
+                            fileId = rawPreview.split('id=')[1].split('&')[0];
+                        } else if (rawPreview.includes('/d/')) {
+                            fileId = rawPreview.split('/d/')[1].split('/')[0];
+                        }
+                        // Використовуємо спеціальний швидкий сервер Google для прев'ю
+                        finalPreview = `https://lh3.googleusercontent.com/d/${fileId}`;
+                    }
+
+                    return {
+                        name: row.c[0] ? String(row.c[0].v) : "",
+                        preview: finalPreview,
+                        archive: row.c[2] ? String(row.c[2].v) : "",
+                        tags: row.c[3] ? String(row.c[3].v) : ""
+                    };
+                }).filter(m => m.name && m.preview.includes('http'));
 
                 renderModels(allModels);
             } catch (err) { console.error("Помилка:", err); }
