@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Model Library</title>
-    <style>
+   <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 15px; }
         #searchInput { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #333; background: #1e1e1e; color: white; font-size: 16px; box-sizing: border-box; outline: none; }
         .menu-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
@@ -15,14 +15,49 @@
         .models-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
         .model-card { background: #1e1e1e; border-radius: 10px; overflow: hidden; padding: 12px; text-align: center; border: 1px solid #2c2c2c; display: flex; flex-direction: column; position: relative; }
         
-        .fav-btn { position: absolute; top: 18px; right: 18px; background: rgba(0,0,0,0.6); border: none; color: white; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; z-index: 10; }
-        .fav-btn.active { color: #ff4757; background: white; }
+        /* --- ОНОВЛЕНИЙ СТИЛЬ СЕРЦЯ --- */
+        .fav-btn { 
+            position: absolute; 
+            top: 10px; /* Трохи ближче до краю */
+            right: 10px; 
+            background: rgba(255, 255, 255, 0.1); /* Дуже легкий білий фон */
+            border: none; 
+            color: rgba(255, 255, 255, 0.4); /* Напівпрозоре сіре серце */
+            border-radius: 50%; 
+            width: 26px; /* Менший розмір (було 30) */
+            height: 26px; 
+            cursor: pointer; 
+            font-size: 14px; /* Менша іконка (було 18) */
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 10; 
+            transition: 0.2s ease-in-out; /* Плавна анімація */
+            backdrop-filter: blur(2px); /* Легке розмиття фону */
+        }
 
+        /* Ефект при наведенні мишки */
+        .fav-btn:hover {
+            color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1); /* Легке збільшення */
+        }
+
+        /* Коли модель в ОБРАНОМУ (активний стан) */
+        .fav-btn.active { 
+            color: white; /* Біле серце на червоному фоні */
+            background: #ff4757; /* Яскраво-червоний фон */
+            opacity: 1;
+            box-shadow: 0 2px 5px rgba(255, 71, 87, 0.4); /* Легке світіння */
+        }
+
+        /* Трохи виправляємо відступ картинки, щоб серце не перекривало */
         .img-wrapper { width: 100%; height: 130px; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 10px; cursor: zoom-in; }
+        
+        /* Решта стилів без змін */
         .model-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .model-name { font-size: 14px; line-height: 1.3; height: 36px; overflow: hidden; margin-bottom: 12px; color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
         .btn-download { background: #28a745; color: white; text-decoration: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-top: auto; }
-        
         #subCategories { padding-top: 15px; border-top: 1px solid #333; margin-top: 5px; display: none; }
         .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; cursor: zoom-out; }
         .modal img { max-width: 95%; max-height: 95%; border-radius: 8px; }
