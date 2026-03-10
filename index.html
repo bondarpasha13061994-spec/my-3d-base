@@ -45,4 +45,180 @@
         .model-name { font-size: 14px; line-height: 1.3; height: 36px; overflow: hidden; margin-bottom: 12px; color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
         .btn-download { background: #28a745; color: white; text-decoration: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-top: auto; }
         
-        #subCategories { padding-top: 15px; border
+        #subCategories { padding-top: 15px; border-top: 1px solid #333; margin-top: 5px; display: none; }
+        .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; cursor: zoom-out; }
+        .modal img { max-width: 95%; max-height: 95%; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+    <div id="imageModal" class="modal" onclick="this.style.display='none'">
+        <img id="modalImg" src="">
+    </div>
+
+    <input type="text" id="searchInput" placeholder="Пошук моделі за назвою або #тегом...">
+    
+    <div id="mainMenu" class="menu-container">
+        <button class="btn-cat active" onclick="selectMain('all', this)">Всі моделі</button>
+        <button class="btn-cat btn-favorites" id="favCounterBtn" onclick="showFavorites(this)">❤️ ОБРАНЕ (0)</button>
+        <button class="btn-cat" id="clearFavsBtn" onclick="clearAllFavorites()">🗑️ ОЧИСТИТИ</button>
+    </div>
+
+    <div id="subCategories" class="menu-container"></div>
+    <div id="modelsGrid" class="models-grid"></div>
+
+    <script>
+        const categoryData = {
+            "#architecture_elements": ["#ceiling", "#wall", "#floor", "#columns", "#stairs", "#windows", "#doors", "#moulding", "#beams", "#fireplace"],
+            "#furniture": ["#sofa", "#chair", "#armchair", "#bed", "#table", "#wardrobe", "#cabinet", "#pouf", "#tv_wall", "#shelving"],
+            "#lighting": ["#pendant_lamp", "#chandelier", "#wall_lamp", "#floor_lamp", "#table_lamp", "#street_light", "#technical_light"],
+            "#decor": ["#rugs", "#curtains", "#paintings", "#clocks", "#vases", "#mirrors", "#plants_indoor", "#books", "#candles", "#sculptures"],
+            "#bathroom": ["#taps", "#bathtubs", "#ceramics", "#showers", "#toilets", "#sinks", "#bathroom_decor", "#towel_rails", "#bathroom_accessories"],
+            "#kitchen": ["#kitchen_sets", "#appliances", "#sinks_kitchen", "#kitchen_islands", "#kitchen_decor", "#tableware", "#kitchen_tools"],
+            "#nature": ["#trees", "#bushes", "#flowers", "#grass", "#rocks"],
+            "#materials": ["#wood", "#stone", "#metal", "#fabric", "#glass", "#concrete", "#tiles", "#wallpaper"],
+            "#outdoor": ["#garden_furniture", "#paving", "#fences", "#pools", "#pavilions"],
+            "#technology": ["#tv", "#audio", "#computers", "#gadgets"]
+        };
+
+        let allModels = [];
+        let favorites = JSON.parse(localStorage.getItem('my3dFavs')) || [];
+        let currentMain = 'all';
+
+        const SHEET_ID = '1bcX0zQphJsAmFTySQ_iWYpNXgFnNZ5XGBHpGGvHI9K8';
+        const JSON_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+
+        async function loadModels() {
+            try {
+                const res = await fetch(JSON_URL);
+                const text = await res.text();
+                const json = JSON.parse(text.substr(47).slice(0, -2));
+                
+                allModels = json.table.rows.map(row => {
+                    let name = row.c[0] ? String(row.c[0].v) : "Без назви";
+                    name = name.replace(/\[3DmooD 🇺🇦 UKRAINE\]/g, "").replace(/3DmooD/g, "").trim();
+                    let rawPreview = row.c[1] ? String(row.c[1].v) : "";
+                    let fileId = "";
+                    if (rawPreview.includes('id=')) fileId = rawPreview.split('id=')[1].split('&')[0];
+                    else if (rawPreview.includes('/d/')) fileId = rawPreview.split('/d/')[1].split('/')[0];
+                    let finalPreview = fileId ? `https://lh3.googleusercontent.com/u/0/d/${fileId}` : rawPreview;
+                    
+                    return { id: fileId || name, name, preview: finalPreview, archive: row.c[2] ? String(row.c[2].v) : "#", tags: row.c[3] ? String(row.c[3].v) : "" };
+                }).filter(m => m.name !== "Без назви");
+
+                updateFavCounter();
+                initMenu();
+                renderModels(allModels);
+            } catch (err) { console.error("Помилка:", err); }
+        }
+
+        function initMenu() {
+            const menu = document.getElementById('mainMenu');
+            Object.keys(categoryData).forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-cat';
+                btn.innerText = cat.replace('#', '').replace(/_/g, ' ');
+                btn.onclick = () => selectMain(cat, btn);
+                menu.appendChild(btn);
+            });
+        }
+
+        function toggleFavorite(id, btn) {
+            const index = favorites.indexOf(id);
+            if (index > -1) { favorites.splice(index, 1); btn.classList.remove('active'); } 
+            else { favorites.push(id); btn.classList.add('active'); }
+            localStorage.setItem('my3dFavs', JSON.stringify(favorites));
+            updateFavCounter();
+        }
+
+        function clearAllFavorites() {
+            if (confirm("Видалити всі моделі з обраного?")) {
+                favorites = [];
+                localStorage.setItem('my3dFavs', JSON.stringify(favorites));
+                updateFavCounter();
+                if (document.getElementById('favCounterBtn').classList.contains('active')) {
+                    renderModels([]);
+                } else {
+                    renderModels(allModels);
+                }
+            }
+        }
+
+        function updateFavCounter() {
+            const count = favorites.length;
+            document.getElementById('favCounterBtn').innerText = `❤️ ОБРАНЕ (${count})`;
+            document.getElementById('clearFavsBtn').style.display = count > 0 ? 'inline-block' : 'none';
+        }
+
+        function showFavorites(btn) {
+            document.querySelectorAll('.btn-cat').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('subCategories').style.display = 'none';
+            const favItems = allModels.filter(m => favorites.includes(m.id));
+            renderModels(favItems);
+        }
+
+        function renderModels(models) {
+            const grid = document.getElementById('modelsGrid');
+            grid.innerHTML = '';
+            models.forEach(m => {
+                const isFav = favorites.includes(m.id);
+                const card = document.createElement('div');
+                card.className = 'model-card';
+                card.innerHTML = `
+                    <button class="fav-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${m.id}', this)">❤️</button>
+                    <div class="img-wrapper" onclick="openModal('${m.preview}')">
+                        <img src="${m.preview}" loading="lazy" onerror="this.src='https://via.placeholder.com/160x130/2c2c2c/888888?text=Error'">
+                    </div>
+                    <div class="model-name">${m.name}</div>
+                    <a href="${m.archive}" class="btn-download" target="_blank">Download</a>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function selectMain(cat, btn) {
+            document.querySelectorAll('.btn-cat').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentMain = cat;
+            const subDiv = document.getElementById('subCategories');
+            subDiv.innerHTML = '';
+            if (cat !== 'all' && categoryData[cat]) {
+                subDiv.style.display = 'flex';
+                categoryData[cat].forEach(sub => {
+                    const sBtn = document.createElement('button');
+                    sBtn.className = 'btn-cat';
+                    sBtn.innerText = sub.replace('#', '').replace(/_/g, ' ');
+                    sBtn.onclick = () => {
+                        document.querySelectorAll('#subCategories .btn-cat').forEach(b => b.classList.remove('active'));
+                        sBtn.classList.add('active');
+                        filterModels(sub);
+                    };
+                    subDiv.appendChild(sBtn);
+                });
+            } else { subDiv.style.display = 'none'; }
+            filterModels();
+        }
+
+        function filterModels(sub = 'all') {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allModels.filter(m => {
+                const t = m.tags.toLowerCase();
+                const n = m.name.toLowerCase();
+                return (n.includes(query) || t.includes(query)) &&
+                       (currentMain === 'all' || t.includes(currentMain.toLowerCase())) &&
+                       (sub === 'all' || t.includes(sub.toLowerCase()));
+            });
+            renderModels(filtered);
+        }
+
+        function openModal(src) {
+            document.getElementById('modalImg').src = src;
+            document.getElementById('imageModal').style.display = 'flex';
+        }
+
+        document.getElementById('searchInput').oninput = () => filterModels();
+        loadModels();
+    </script>
+</body>
+</html>
