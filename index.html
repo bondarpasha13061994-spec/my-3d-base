@@ -11,22 +11,20 @@
         .btn-cat { background: #2c2c2c; color: #bbb; border: 1px solid #3d3d3d; padding: 10px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; text-transform: uppercase; transition: 0.2s; }
         .btn-cat.active { background: #007bff; color: white; border-color: #007bff; font-weight: bold; }
         .btn-favorites { background: #ff4757 !important; color: white !important; border: none; }
-        
         #clearFavsBtn { background: #444; color: #fff; border: none; display: none; }
         
-        /* Поверхи меню */
         #midCategories { padding-top: 10px; border-top: 1px solid #333; display: none; margin-top: 5px; }
         #subCategories { padding-top: 10px; border-top: 1px dotted #444; display: none; margin-top: 5px; }
 
         .models-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
         .model-card { background: #1e1e1e; border-radius: 10px; overflow: hidden; padding: 12px; text-align: center; border: 1px solid #2c2c2c; display: flex; flex-direction: column; position: relative; }
         
-        .fav-btn { position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.1); border: none; color: rgba(255, 255, 255, 0.4); border-radius: 50%; width: 26px; height: 26px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; z-index: 10; transition: 0.2s; backdrop-filter: blur(2px); }
+        .fav-btn { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.4); border-radius: 50%; width: 26px; height: 26px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; z-index: 10; transition: 0.2s; backdrop-filter: blur(2px); }
         .fav-btn.active { color: white; background: #ff4757; }
 
         .img-wrapper { width: 100%; height: 130px; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 10px; cursor: zoom-in; }
         .model-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .model-name { font-size: 14px; line-height: 1.3; height: 36px; overflow: hidden; margin-bottom: 12px; color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .model-name { font-size: 14px; height: 36px; overflow: hidden; margin-bottom: 12px; color: #fff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
         .btn-download { background: #28a745; color: white; text-decoration: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-top: auto; }
         
         .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; cursor: zoom-out; }
@@ -36,7 +34,7 @@
 <body>
 
     <div id="imageModal" class="modal" onclick="this.style.display='none'"><img id="modalImg" src=""></div>
-    <input type="text" id="searchInput" placeholder="Пошук моделі за назвою або #тегом...">
+    <input type="text" id="searchInput" placeholder="Пошук моделі...">
     
     <div id="mainMenu" class="menu-container">
         <button class="btn-cat active" onclick="resetAll(this)">Всі моделі</button>
@@ -46,19 +44,16 @@
 
     <div id="midCategories" class="menu-container"></div>
     <div id="subCategories" class="menu-container"></div>
-
     <div id="modelsGrid" class="models-grid"></div>
 
     <script>
-        // Твій повний об'єкт категорій
         const categoryData = {
             "#ARCHITECTURE_ELEMENTS_MENU": {
-                "#DOORS_MENU": ["#ENTRANCE_DOORS", "#INTERIOR_DOORS", "#SLIDING_DOORS", "#FACADE_DOORS", "#FIRE_DOORS"],
+                "#DOORS_MENU": ["#ENTRANCE_DOORS", "#INTERIOR_DOORS", "#SLIDING_DOORS", "#FACADE_DOORS"],
                 "#WINDOWS_MENU": ["#PANORAMIC_WINDOWS", "#DORMER_WINDOWS", "#FACADE_WINDOWS"],
                 "#STAIRS_MENU": ["#SPIRAL_STAIRS", "#SINGLESTEP_STAIRS", "#RAILING"],
-                "#FIREPLACES_MENU": ["#OPEN_FIREPLACES", "#CLOSED_FIREPLACES", "#BIO_FIREPLACES"],
-                "#CEILING": ["#GC_CEILING", "#WOODEN_CEILING", "#METALNESS_CEILING"],
-                "#RADIATORS": ["#MODERN_RADIATORS", "#VINTAGE_RADIATORS"]
+                "#FIREPLACES_MENU": ["#OPEN_FIREPLACES", "#CLOSED_FIREPLACES", "#STOVES"],
+                "#CEILING": ["#GC_CEILING", "#WOODEN_CEILING", "#ARMSTRONG_CEILING"]
             },
             "#FURNITURE_MENU": {
                 "#SOFAS_MENU": ["#MODULAR_SOFAS", "#CORNER_SOFAS", "#TWO_PLACES_SOFAS"],
@@ -85,8 +80,7 @@
 
         let allModels = [];
         let favorites = JSON.parse(localStorage.getItem('my3dFavs')) || [];
-        let currentLvl1 = 'all';
-        let currentLvl2 = 'all';
+        let curL1 = 'all', curL2 = 'all';
 
         const SHEET_ID = '1bcX0zQphJsAmFTySQ_iWYpNXgFnNZ5XGBHpGGvHI9K8';
         const JSON_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
@@ -97,15 +91,16 @@
                 const text = await res.text();
                 const json = JSON.parse(text.substr(47).slice(0, -2));
                 allModels = json.table.rows.map(row => {
-                    let name = row.c[0] ? String(row.c[0].v).replace(/\[.*?\]/g, "").trim() : "Без назви";
-                    let rawPreview = row.c[1] ? String(row.c[1].v) : "";
-                    let fileId = "";
-                    if (rawPreview.includes('id=')) fileId = rawPreview.split('id=')[1].split('&')[0];
-                    else if (rawPreview.includes('/d/')) fileId = rawPreview.split('/d/')[1].split('/')[0];
+                    let n = row.c[0] ? String(row.c[0].v).replace(/\[.*?\]/g, "").trim() : "Без назви";
+                    let rawP = row.c[1] ? String(row.c[1].v) : "";
+                    let fId = "";
+                    if (rawP.includes('id=')) fId = rawP.split('id=')[1].split('&')[0];
+                    else if (rawP.includes('/d/')) fId = rawP.split('/d/')[1].split('/')[0];
+                    
                     return { 
-                        id: fileId || name, 
-                        name, 
-                        preview: fileId ? `https://lh3.googleusercontent.com/d/${fileId}` : rawPreview, 
+                        id: fId || n, 
+                        name: n, 
+                        preview: fId ? `https://lh3.googleusercontent.com/d/${fId}` : rawP, 
                         archive: row.c[2] ? String(row.c[2].v) : "#", 
                         tags: row.c[3] ? String(row.c[3].v).toLowerCase() : "" 
                     };
@@ -116,24 +111,30 @@
             } catch (err) { console.error(err); }
         }
 
-        // 1 РІВЕНЬ
+        // Чистка тексту від технічних символів
+        function formatName(str) {
+            return str.replace(/#/g, '').replace(/_MENU/g, '').replace(/_/g, ' ');
+        }
+
         function initMenu() {
             const menu = document.getElementById('mainMenu');
             Object.keys(categoryData).forEach(cat => {
                 const btn = document.createElement('button');
                 btn.className = 'btn-cat';
-                btn.innerText = cat.replace('#', '').replace('_MENU', '').replace(/_/g, ' ');
+                btn.innerText = formatName(cat);
                 btn.onclick = () => selectLvl1(cat, btn);
                 menu.appendChild(btn);
             });
         }
 
-        // ЛОГІКА ДЛЯ 2 РІВНЯ
         function selectLvl1(cat, btn) {
             document.querySelectorAll('#mainMenu .btn-cat').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            currentLvl1 = cat.toLowerCase();
             
+            // Чистимо тег для пошуку в базі (видаляємо # та _MENU)
+            curL1 = cat.toLowerCase().replace('_menu', '').replace('#', '');
+            curL2 = 'all';
+
             const midDiv = document.getElementById('midCategories');
             const subDiv = document.getElementById('subCategories');
             midDiv.innerHTML = '';
@@ -143,19 +144,18 @@
             Object.keys(categoryData[cat]).forEach(mid => {
                 const mBtn = document.createElement('button');
                 mBtn.className = 'btn-cat';
-                mBtn.innerText = mid.replace('#', '').replace('_MENU', '').replace(/_/g, ' ');
+                mBtn.innerText = formatName(mid);
                 mBtn.onclick = () => selectLvl2(cat, mid, mBtn);
                 midDiv.appendChild(mBtn);
             });
             filterModels();
         }
 
-        // ЛОГІКА ДЛЯ 3 РІВНЯ
         function selectLvl2(lvl1, mid, btn) {
             document.querySelectorAll('#midCategories .btn-cat').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            currentLvl2 = mid.toLowerCase();
             
+            curL2 = mid.toLowerCase().replace('_menu', '').replace('#', '');
             const subDiv = document.getElementById('subCategories');
             subDiv.innerHTML = '';
             subDiv.style.display = 'flex';
@@ -163,11 +163,11 @@
             categoryData[lvl1][mid].forEach(sub => {
                 const sBtn = document.createElement('button');
                 sBtn.className = 'btn-cat';
-                sBtn.innerText = sub.replace('#', '').replace(/_/g, ' ');
+                sBtn.innerText = formatName(sub);
                 sBtn.onclick = () => {
                     document.querySelectorAll('#subCategories .btn-cat').forEach(b => b.classList.remove('active'));
                     sBtn.classList.add('active');
-                    filterModels(sub.toLowerCase());
+                    filterModels(sub.toLowerCase().replace('#', ''));
                 };
                 subDiv.appendChild(sBtn);
             });
@@ -179,8 +179,8 @@
             const filtered = allModels.filter(m => {
                 const t = m.tags;
                 const matchSearch = m.name.toLowerCase().includes(query) || t.includes(query);
-                const matchL1 = currentLvl1 === 'all' || t.includes(currentLvl1);
-                const matchL2 = currentLvl2 === 'all' || t.includes(currentLvl2);
+                const matchL1 = curL1 === 'all' || t.includes(curL1);
+                const matchL2 = curL2 === 'all' || t.includes(curL2);
                 const matchL3 = subTag === 'all' || t.includes(subTag);
                 return matchSearch && matchL1 && matchL2 && matchL3;
             });
@@ -190,7 +190,7 @@
         function resetAll(btn) {
             document.querySelectorAll('.btn-cat').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            currentLvl1 = 'all'; currentLvl2 = 'all';
+            curL1 = 'all'; curL2 = 'all';
             document.getElementById('midCategories').style.display = 'none';
             document.getElementById('subCategories').style.display = 'none';
             renderModels(allModels);
