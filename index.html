@@ -28,12 +28,14 @@
 </head>
 <body>
     <div id="imageModal" class="modal" onclick="this.style.display='none'"><img id="modalImg" src=""></div>
-    <input type="text" id="searchInput" placeholder="Пошук моделі...">
+    <input type="text" id="searchInput" placeholder="Пошук за назвою або тегом...">
+    
     <div id="mainMenu" class="menu-container">
         <button class="btn-cat active" onclick="resetMenu(this)">Всі моделі</button>
         <button class="btn-cat btn-favorites" id="favCounterBtn" onclick="showFavorites(this)">❤️ ОБРАНЕ (0)</button>
         <button class="btn-cat" id="clearFavsBtn" onclick="clearAllFavorites()">🗑️ ОЧИСТИТИ</button>
     </div>
+    
     <div id="midCategories" class="menu-container"></div>
     <div id="subCategories" class="menu-container"></div>
     <div id="modelsGrid" class="models-grid"></div>
@@ -55,7 +57,6 @@ const categoryData = {
         "#BATHROOM_FAUCETS_MENU": ["#BATHTUBE_FAUCETS", "#SHOWER_FAUCETS", "#HAND_WASHING_FAUCETS", "#HYGIENIC_SHOWERS"],
         "#BATHROOM_FURNITURE_MENU": ["#CLASSICAL_BATHROOM_FURNITURE", "#MODERN_BATHROOM_FURNITURE", "#WOODEN_BATHROOM_FURNITURE"],
         "#BATHTUBS_MENU": ["#FREESTANDING_BATHTUBS", "#BUILT_IN_BATHTUBS", "#JACUZZI", "#CORNER_BATHTUBS"],
-        "#BATHROOM_APPLIANCES_MENU": ["#WASHING_MACHINES", "#DRYING_MACHINES", "#BOILERS", "#HAIR_DRYERS"],
         "#TOILETS_MENU": ["#HIDDEN_TOILETS", "#SMART_TOILETS", "#BIDETS", "#URINALS", "#TOILETS_SET"],
         "#WASH_BASINS_MENU": ["#OVERHEAD_WASH_BASINS", "#FREESTANDING_WASH_BASINS", "#CONSOLE_WASH_BASINS", "#DOUBLE_WASH_BASINS"],
         "#SHOWERS": ["#SHOWER_CABINS", "#SHOWER_DRAINS", "#SHOWER_TRAYS"]
@@ -212,11 +213,18 @@ const categoryData = {
     function applyFilters() {
         currentPage = 1;
         const query = document.getElementById('searchInput').value.toLowerCase();
+        
+        // Перетворюємо вибрані теги в нижній регістр для порівняння
+        const l1 = curLvl1.toLowerCase();
+        const l2 = curLvl2.toLowerCase();
+        const l3 = curLvl3.toLowerCase();
+
         filteredModels = allModels.filter(m => {
-            const matchSearch = m.name.toLowerCase().includes(query) || m.tags.includes(query);
-            const matchL1 = curLvl1 === 'all' || m.tags.includes(curLvl1.toLowerCase());
-            const matchL2 = curLvl2 === 'all' || m.tags.includes(curLvl2.toLowerCase());
-            const matchL3 = curLvl3 === 'all' || m.tags.includes(curLvl3.toLowerCase());
+            const t = m.tags; // Вже в нижньому регістрі з loadModels()
+            const matchSearch = m.name.toLowerCase().includes(query) || t.includes(query);
+            const matchL1 = curLvl1 === 'all' || t.includes(l1);
+            const matchL2 = curLvl2 === 'all' || t.includes(l2);
+            const matchL3 = curLvl3 === 'all' || t.includes(l3);
             return matchSearch && matchL1 && matchL2 && matchL3;
         });
         renderModels(false);
