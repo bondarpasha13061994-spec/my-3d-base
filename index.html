@@ -196,9 +196,10 @@
     }
 };
 
-        let allModels = [];
+  let allModels = [];
         let favorites = JSON.parse(localStorage.getItem('my3dFavs')) || [];
         let curL1 = 'all', curL2 = 'all';
+        let displayLimit = 60; // Початковий ліміт відображення
 
         const SHEET_ID = '1bcX0zQphJsAmFTySQ_iWYpNXgFnNZ5XGBHpGGvHI9K8';
         const JSON_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
@@ -292,43 +293,74 @@
             filterModels();
         }
 
-        function filterModels(subTag = 'all') {
+ function filterModels(subTag = 'all') {
+            // Скидаємо ліміт відображення до 60 при кожному новому фільтрі чи пошуку
+            displayLimit = 60; 
+
             const query = document.getElementById('searchInput').value.toLowerCase();
             const filtered = allModels.filter(m => {
                 const t = m.tags;
                 const matchSearch = m.name.toLowerCase().includes(query) || t.includes(query);
+                
+                // Якщо обрано "Всі моделі" і немає пошукового запиту, показуємо все (з урахуванням ліміту)
+                if (curL1 === 'all' && query === '') return true;
+
                 const matchL1 = curL1 === 'all' || t.includes(curL1);
                 const matchL2 = curL2 === 'all' || t.includes(curL2);
                 const matchL3 = subTag === 'all' || t.includes(subTag);
+                
                 return matchSearch && matchL1 && matchL2 && matchL3;
             });
+
             renderModels(filtered);
         }
 
-        function resetAll(btn) {
+    function resetAll(btn) {
             document.querySelectorAll('.btn-cat').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             curL1 = 'all'; curL2 = 'all';
+            displayLimit = 60; // Скидаємо ліміт
             document.getElementById('midCategories').style.display = 'none';
             document.getElementById('subCategories').style.display = 'none';
             renderModels(allModels);
         }
 
-        function renderModels(models) {
+       function renderModels(models) {
             const grid = document.getElementById('modelsGrid');
             grid.innerHTML = '';
-            models.forEach(m => {
+            
+            // Беремо лише частину моделей для швидкого відображення
+            const visibleModels = models.slice(0, displayLimit);
+            
+            visibleModels.forEach(m => {
                 const isFav = favorites.includes(m.id);
                 const card = document.createElement('div');
                 card.className = 'model-card';
+                
+                // Оптимізація прев'ю: додаємо лінію завантаження lazy
                 card.innerHTML = `
                     <button class="fav-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${m.id}', this)">❤️</button>
-                    <div class="img-wrapper" onclick="openModal('${m.preview}')"><img src="${m.preview}" loading="lazy"></div>
+                    <div class="img-wrapper" onclick="openModal('${m.preview}')">
+                        <img src="${m.preview}" loading="lazy" onerror="this.src='https://via.placeholder.com/160x130/2c2c2c/888888?text=Error'">
+                    </div>
                     <div class="model-name">${m.name}</div>
                     <a href="${m.archive}" class="btn-download" target="_blank">Download</a>
                 `;
                 grid.appendChild(card);
             });
+
+            // Якщо моделей більше, ніж ми показали — додаємо кнопку дозавантаження
+            if (models.length > displayLimit) {
+                const moreBtn = document.createElement('button');
+                moreBtn.className = 'btn-cat';
+                moreBtn.style.cssText = "width: 100%; margin: 20px 0; padding: 15px; background: #333; color: #fff; border: 1px solid #444; cursor: pointer; font-weight: bold; border-radius: 8px;";
+                moreBtn.innerText = `ПОКАЗАТИ ЩЕ (Залишилось ${models.length - displayLimit})`;
+                moreBtn.onclick = () => {
+                    displayLimit += 100; // Додаємо ще 100 моделей при натисканні
+                    renderModels(models);
+                };
+                grid.appendChild(moreBtn);
+            }
         }
 
         function toggleFavorite(id, btn) {
