@@ -29,6 +29,11 @@
     </style>
 </head>
 <body>
+    <div id="paywall" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#121212; z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
+    <h2 style="color:#ff4757;">⌛ Тестовий період закінчився</h2>
+    <p>Ваш безкоштовний доступ (20 днів) вичерпано.<br>Підтримайте проект, щоб отримати повний доступ до 15,000 моделей.</p>
+    <a href="ПОСИЛАННЯ_НА_ОПЛАТУ" style="display:inline-block; background:#28a745; color:white; padding:15px 30px; border-radius:10px; text-decoration:none; font-weight:bold; margin-top:20px;">Оплатити доступ — 150 грн</a>
+</div>
 
     <div id="imageModal" class="modal" onclick="this.style.display='none'"><img id="modalImg" src=""></div>
     <input type="text" id="searchInput" placeholder="Пошук моделі...">
@@ -158,13 +163,27 @@
 
         // 1. АВТОРИЗАЦІЯ (Рятувальний круг, якщо Telegram не віддає дані)
         async function checkAccess() {
-            const user = tg.initDataUnsafe?.user;
-            
-            if (!user) {
-                console.log("Запущено поза Telegram або дані недоступні.");
-                loadModels();
-                return;
-            }
+    const user = tg.initDataUnsafe?.user;
+    if (!user) { loadModels(); return; }
+
+    const userId = String(user.id);
+    const userName = encodeURIComponent(user.username || (user.first_name + " " + (user.last_name || "")));
+
+    // Створюємо запит через JSONP
+    const script = document.createElement('script');
+    script.src = `${AUTH_SCRIPT_URL}?userId=${userId}&userName=${userName}&callback=authHandler`;
+    document.body.appendChild(script);
+}
+
+// Ця функція спрацює, коли прийде відповідь від Google
+function authHandler(data) {
+    if (data.access) {
+        console.log("Доступ дозволено, днів:", data.daysLeft);
+        loadModels();
+    } else {
+        document.getElementById('paywall').style.display = 'flex';
+    }
+}
 
             try {
                 // Відправка без await, щоб не блокувати завантаження
