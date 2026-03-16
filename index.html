@@ -162,46 +162,29 @@
         let displayLimit = 60;
 
         // 1. АВТОРИЗАЦІЯ (Рятувальний круг, якщо Telegram не віддає дані)
+        // 1. АВТОРИЗАЦІЯ
         async function checkAccess() {
-    const user = tg.initDataUnsafe?.user;
-    if (!user) { loadModels(); return; }
+            const user = tg.initDataUnsafe?.user;
+            if (!user) { loadModels(); return; }
 
-    const userId = String(user.id);
-    const userName = encodeURIComponent(user.username || (user.first_name + " " + (user.last_name || "")));
+            const userId = String(user.id);
+            const userName = encodeURIComponent(user.username || (user.first_name + " " + (user.last_name || "")));
 
-    // Створюємо запит через JSONP
-    const script = document.createElement('script');
-    script.src = `${AUTH_SCRIPT_URL}?userId=${userId}&userName=${userName}&callback=authHandler`;
-    document.body.appendChild(script);
-}
+            // Створюємо запит через JSONP (Це дозволяє отримати статус доступу від Google)
+            const script = document.createElement('script');
+            script.src = `${AUTH_SCRIPT_URL}?userId=${userId}&userName=${userName}&callback=authHandler`;
+            document.body.appendChild(script);
+        }
 
-// Ця функція спрацює, коли прийде відповідь від Google
-function authHandler(data) {
-    if (data.access) {
-        console.log("Доступ дозволено, днів:", data.daysLeft);
-        loadModels();
-    } else {
-        document.getElementById('paywall').style.display = 'flex';
-    }
-}
-
-            try {
-                // Відправка без await, щоб не блокувати завантаження
-                fetch(AUTH_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    cache: 'no-cache',
-                    body: JSON.stringify({
-                        action: 'check_user',
-                        userId: String(user.id),
-                        userName: user.username || (user.first_name + " " + (user.last_name || ""))
-                    })
-                });
-            } catch (e) {
-                console.error("Auth error:", e);
+        // Ця функція спрацює автоматично, коли прийде відповідь від Google
+        function authHandler(data) {
+            if (data.access) {
+                console.log("Доступ дозволено, днів:", data.daysLeft);
+                loadModels();
+            } else {
+                // Показуємо екран блокування, якщо доступ закритий
+                document.getElementById('paywall').style.display = 'flex';
             }
-            
-            loadModels(); // В будь-якому випадку вантажимо моделі
         }
 
         // 2. ЗАВАНТАЖЕННЯ МОДЕЛЕЙ
