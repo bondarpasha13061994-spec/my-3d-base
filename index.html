@@ -30,10 +30,10 @@
 </head>
 <body>
     <div id="paywall" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#121212; z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
-    <h2 style="color:#ff4757;">⌛ Тестовий період закінчився</h2>
-    <p>Ваш безкоштовний доступ (20 днів) вичерпано.<br>Підтримайте проект, щоб отримати повний доступ до 15,000 моделей.</p>
-    <a href="ПОСИЛАННЯ_НА_ОПЛАТУ" style="display:inline-block; background:#28a745; color:white; padding:15px 30px; border-radius:10px; text-decoration:none; font-weight:bold; margin-top:20px;">Оплатити доступ — 150 грн</a>
-</div>
+        <h2 style="color:#ff4757;">⌛ Тестовий період закінчився</h2>
+        <p>Ваш безкоштовний доступ (20 днів) вичерпано.<br>Підтримайте проект, щоб отримати повний доступ до 15,000 моделей.</p>
+        <a href="ПОСИЛАННЯ_НА_ОПЛАТУ" style="display:inline-block; background:#28a745; color:white; padding:15px 30px; border-radius:10px; text-decoration:none; font-weight:bold; margin-top:20px;">Оплатити доступ — 150 грн</a>
+    </div>
 
     <div id="imageModal" class="modal" onclick="this.style.display='none'"><img id="modalImg" src=""></div>
     <input type="text" id="searchInput" placeholder="Пошук моделі...">
@@ -49,7 +49,6 @@
     <div id="modelsGrid" class="models-grid"></div>
 
     <script>
-        // ТУТ ВАШІ КАТЕГОРІЇ (Я їх згорнув для зручності, але вони в коді залишаються ті ж самі)
         const categoryData = {
             "#ARCHITECTURE_ELEMENTS_MENU": {
                 "#DOORS_MENU": ["#ENTRANCE_DOORS", "#INTERIOR_DOORS", "#SLIDING_DOORS", "#FACADE_DOORS", "#FIRE_DOORS", "#DOOR_HANDLES"],
@@ -116,7 +115,7 @@
                 "#OUTDOOR_LAMPS_MENU": ["#STREET_LAMPS", "#PAVEMENT_LAMPS", "#HANGING_OUTDOOR_LAMPS"],
                 "#CEILING_LAMPS_MENU": ["#CLASSICAL_CEILING_LAMPS", "#MODERN_CEILING_LAMPS", "#FANS"],
                 "#TECHNICAL_LAMPS_MENU": ["#TECHNICAL_LAMPS", "#GARLANDS", "#NEON_TEXT", "#STUDIO_LAMPS"],
-                "#OTHER_LIGHT": ["#FLOOR_LAMPS", "#CLASSICAL_FLOOR_LAMPS", "#MODERN_FLOOR_LAMPS", "#TABLE_LAMPS", "#CLASSICAL_TABLE_LAMPS", "#MODERN_TABLE_LAMPS", "#LAMPS_SET", "#CLASSICAL_LAMPS_SET", "#MODERN_LAMPS_SET"]
+                "#OTHER_LIGHT": ["#FLOOR_LAMPS", "#CLASSICAL_FLOOR_LAMPS", "#MODERN_FLOOR_LAMPS", "#TABLE_LAMPS", "#CLASSICAL_TABLE_LAMPS", "#MODERN_TABLE_LAMPS", "#職業_LAMPS_SET", "#CLASSICAL_LAMPS_SET", "#MODERN_LAMPS_SET"]
             },
             "#NATURE_MENU": {
                 "#PLANTS_MENU": ["#POTTED_INDOOR_PLANTS", "#DECORATIVE_PLANTS", "#HANGING_PLANTS", "#FLOWERS"],
@@ -126,8 +125,8 @@
             },
             "#TECHNOLOGIES_MENU": {
                 "#AUDIO_APPLIANCES_MENU": ["#AUDIO_APPLIANCES", "#AUDIO_COLUMNS", "#AUDIO_SPEAKERS", "#AUDIO_CONSOLES", "#AUDIO_SYSTEMS", "#HEADPHONES", "#MICROPHONES", "#TAPE_RECORDERS", "#VINYL_PLAYERS"],
-                "#ELECTRONICS_MENU": ["#ELECTRONICS", "#CAMERAS", "#CAMERA_ACTION", "#CAMERA_STANDS", "#VIDEOCAMERAS", "#GAME_CONSOLES", "#NINTENDO", "#PLAYSTATION", "#XBOX", "#LAPTOPS", "#LAPTOP_AIRCOOLS", "#PC", "#PC_MONITORES", "#PC_PERIPHERALS", "#PC_SERVERS", "#PC_SET", "#PC_SYSTEM_UNIT", "#SMARTPHONES", "#TABLETS", "#TV", "#TV_PROPS", "#TV_SET", "#DVD", "#GAME_SIMULATORS"],
-                "#HOUSEHOLD_APPLIANCES_MENU": ["#HOUSEHOLD_APPLIANCES", "#AIR_CONDITIONING", "#AIR_CONDITIONER_SET", "#HIDDEN_AIR_CONDITIONERS", "#INDOOR_AIR_CONDITIONERS", "#OUTDOOR_AIR_CONDITIONERS", "#INTERCOMS", "#SEWING_MACHINE", "#VACUUM_CLEANER", "#ROBOTIC_VACUUMS", "#UPRIGHT_VACUUMS"],
+                "#ELECTRONICS_MENU": ["#ELECTRONICS", "#CAMERAS", "#CAMERA_ACTION", "#CAMERA_STANDS", "#VIDEOCAMERAS", "#GAME_CONSOLES", "#NINTENDO", "#PLAYSTATION", "#XBOX", "#LAPTOP", "#LAPTOP_AIRCOOLS", "#PC", "#PC_MONITORES", "#PC_PERIPHERALS", "#PC_SERVERS", "#PC_SET", "#PC_SYSTEM_UNIT", "#SMARTPHONES", "#TABLETS", "#TV", "#TV_PROPS", "#TV_SET", "#DVD", "#GAME_SIMULATORS"],
+                "#HOUSEHOLD_APPLIANCES_MENU": ["#HOUSEHOLD_APPLIANCES", "#AIR_CONDITIONING", "#AIR_CONDITIONER_SET", "#HIDDEN_AIR_CONDITIONERS", "#INDOOR_AIR_CONDITIONERS", "#OUTDOOR_AIR_CONDITIONERS", "#INTERCOMS", "#SEWING_MACHINE", "#VACUUM_CLEANER", "#CANISTER_VACUUMS", "#ROBOTIC_VACUUMS", "#UPRIGHT_VACUUMS"],
                 "#OFFICE_APPLIANCES_MENU": ["#OFFICE_PHONES", "#PRINTERS", "#PROJECTORS", "#PROJECTOR_SCREENS", "#WATER_COOLERS"],
                 "#OTHER_TECH": ["#ENGENERING_APPLIANCES", "#SOCKETS", "#SWITCHES", "#ELECTRICAL_PANELS", "#RETRO_APPLAINCES", "#GRAMOPHONES", "#RETRO_CAMERAS", "#RETRO_PHONES", "#RETRO_RADIO", "#RETRO_TAPE_RECORDERS", "#RETRO_TYPEWRITERS", "#RETRO_PC", "#AIR_HUMIDIFIERS", "#ANTHENAS", "#CHARGING_STATIONS", "#ELECTRONIC_BOARDS", "#ELECTRIONIC_SCALES", "#ALARM_CLOCKS", "#MAGNITOLAS", "#QUADROCOPTERS", "#ROBOTS", "#ROUTERS", "#SAFES", "#SECURITY_SYSTEM", "#STAIR_LIFTS", "#TELESCOPES", "#CAR_CHARGERS", "#WATER_FILTERS", "#BANKNOTE_COUNTERS", "#AIR_PURIFIERS", "#VENTILATORS"]
             },
@@ -148,7 +147,6 @@
             }
         };
 
-        // НАЛАШТУВАННЯ
         const SHEET_ID = '1bcX0zQphJsAmFTySQ_iWYpNXgFnNZ5XGBHpGGvHI9K8';
         const JSON_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
         const AUTH_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxeJAo0aJXF_nHM0va-tf0x2x4fgThMqfRkEDL2ki58nl4dQUjTc7NKTT7PixqHK4YG/exec';
@@ -161,33 +159,31 @@
         let curL1 = 'all', curL2 = 'all';
         let displayLimit = 60;
 
-        // 1. АВТОРИЗАЦІЯ (Рятувальний круг, якщо Telegram не віддає дані)
-        // 1. АВТОРИЗАЦІЯ
-        async function checkAccess() {
+        function checkAccess() {
             const user = tg.initDataUnsafe?.user;
             if (!user) { loadModels(); return; }
 
             const userId = String(user.id);
             const userName = encodeURIComponent(user.username || (user.first_name + " " + (user.last_name || "")));
 
-            // Створюємо запит через JSONP (Це дозволяє отримати статус доступу від Google)
+            const oldScript = document.getElementById('auth-script');
+            if (oldScript) oldScript.remove();
+
             const script = document.createElement('script');
-            script.src = `${AUTH_SCRIPT_URL}?userId=${userId}&userName=${userName}&callback=authHandler`;
+            script.id = 'auth-script';
+            script.src = `${AUTH_SCRIPT_URL}?userId=${userId}&userName=${userName}&callback=authHandler&t=${Date.now()}`;
             document.body.appendChild(script);
         }
 
-        // Ця функція спрацює автоматично, коли прийде відповідь від Google
         function authHandler(data) {
             if (data.access) {
-                console.log("Доступ дозволено, днів:", data.daysLeft);
                 loadModels();
             } else {
-                // Показуємо екран блокування, якщо доступ закритий
                 document.getElementById('paywall').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
             }
         }
 
-        // 2. ЗАВАНТАЖЕННЯ МОДЕЛЕЙ
         async function loadModels() {
             try {
                 const res = await fetch(JSON_URL);
@@ -299,6 +295,7 @@
             const grid = document.getElementById('modelsGrid');
             grid.innerHTML = '';
             const visibleModels = models.slice(0, displayLimit);
+            
             visibleModels.forEach(m => {
                 const isFav = favorites.includes(m.id);
                 const card = document.createElement('div');
@@ -311,12 +308,16 @@
                 `;
                 grid.appendChild(card);
             });
+
             if (models.length > displayLimit) {
                 const moreBtn = document.createElement('button');
                 moreBtn.className = 'btn-cat';
                 moreBtn.style.cssText = "width: 100%; margin: 20px 0; padding: 15px; background: #333; color: #fff; border: 1px solid #444; cursor: pointer; font-weight: bold; border-radius: 8px;";
                 moreBtn.innerText = `ПОКАЗАТИ ЩЕ (Залишилось ${models.length - displayLimit})`;
-                moreBtn.onclick = () => { displayLimit += 100; renderModels(models); };
+                moreBtn.onclick = () => {
+                    displayLimit += 100;
+                    renderModels(models);
+                };
                 grid.appendChild(moreBtn);
             }
         }
@@ -356,7 +357,6 @@
 
         document.getElementById('searchInput').oninput = () => filterModels();
         
-        // СТАРТ
         checkAccess();
     </script>
 </body>
