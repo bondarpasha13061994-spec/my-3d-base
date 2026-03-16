@@ -44,7 +44,7 @@
     <div id="modelsGrid" class="models-grid"></div>
 
     <script>
-        // ТУТ ВАШІ КАТЕГОРІЇ (Я їх згорнув для зручності, але вони в коді залишаються ті ж самі)
+        // Твої дані категорій (залишаються без змін)
         const categoryData = {
             "#ARCHITECTURE_ELEMENTS_MENU": {
                 "#DOORS_MENU": ["#ENTRANCE_DOORS", "#INTERIOR_DOORS", "#SLIDING_DOORS", "#FACADE_DOORS", "#FIRE_DOORS", "#DOOR_HANDLES"],
@@ -122,7 +122,7 @@
             "#TECHNOLOGIES_MENU": {
                 "#AUDIO_APPLIANCES_MENU": ["#AUDIO_APPLIANCES", "#AUDIO_COLUMNS", "#AUDIO_SPEAKERS", "#AUDIO_CONSOLES", "#AUDIO_SYSTEMS", "#HEADPHONES", "#MICROPHONES", "#TAPE_RECORDERS", "#VINYL_PLAYERS"],
                 "#ELECTRONICS_MENU": ["#ELECTRONICS", "#CAMERAS", "#CAMERA_ACTION", "#CAMERA_STANDS", "#VIDEOCAMERAS", "#GAME_CONSOLES", "#NINTENDO", "#PLAYSTATION", "#XBOX", "#LAPTOPS", "#LAPTOP_AIRCOOLS", "#PC", "#PC_MONITORES", "#PC_PERIPHERALS", "#PC_SERVERS", "#PC_SET", "#PC_SYSTEM_UNIT", "#SMARTPHONES", "#TABLETS", "#TV", "#TV_PROPS", "#TV_SET", "#DVD", "#GAME_SIMULATORS"],
-                "#HOUSEHOLD_APPLIANCES_MENU": ["#HOUSEHOLD_APPLIANCES", "#AIR_CONDITIONING", "#AIR_CONDITIONER_SET", "#HIDDEN_AIR_CONDITIONERS", "#INDOOR_AIR_CONDITIONERS", "#OUTDOOR_AIR_CONDITIONERS", "#INTERCOMS", "#SEWING_MACHINE", "#VACUUM_CLEANER", "#ROBOTIC_VACUUMS", "#UPRIGHT_VACUUMS"],
+                "#HOUSEHOLD_APPLIANCES_MENU": ["#HOUSEHOLD_APPLIANCES", "#AIR_CONDITIONING", "#AIR_CONDITIONER_SET", "#HIDDEN_AIR_CONDITIONERS", "#INDOOR_AIR_CONDITIONERS", "#OUTDOOR_AIR_CONDITIONERS", "#INTERCOMS", "#SEWING_MACHINE", "#VACUUM_CLEANER", "#CANISTER_VACUUMS", "#ROBOTIC_VACUUMS", "#UPRIGHT_VACUUMS"],
                 "#OFFICE_APPLIANCES_MENU": ["#OFFICE_PHONES", "#PRINTERS", "#PROJECTORS", "#PROJECTOR_SCREENS", "#WATER_COOLERS"],
                 "#OTHER_TECH": ["#ENGENERING_APPLIANCES", "#SOCKETS", "#SWITCHES", "#ELECTRICAL_PANELS", "#RETRO_APPLAINCES", "#GRAMOPHONES", "#RETRO_CAMERAS", "#RETRO_PHONES", "#RETRO_RADIO", "#RETRO_TAPE_RECORDERS", "#RETRO_TYPEWRITERS", "#RETRO_PC", "#AIR_HUMIDIFIERS", "#ANTHENAS", "#CHARGING_STATIONS", "#ELECTRONIC_BOARDS", "#ELECTRIONIC_SCALES", "#ALARM_CLOCKS", "#MAGNITOLAS", "#QUADROCOPTERS", "#ROBOTS", "#ROUTERS", "#SAFES", "#SECURITY_SYSTEM", "#STAIR_LIFTS", "#TELESCOPES", "#CAR_CHARGERS", "#WATER_FILTERS", "#BANKNOTE_COUNTERS", "#AIR_PURIFIERS", "#VENTILATORS"]
             },
@@ -143,7 +143,6 @@
             }
         };
 
-        // НАЛАШТУВАННЯ
         const SHEET_ID = '1bcX0zQphJsAmFTySQ_iWYpNXgFnNZ5XGBHpGGvHI9K8';
         const JSON_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
         const AUTH_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxeJAo0aJXF_nHM0va-tf0x2x4fgThMqfRkEDL2ki58nl4dQUjTc7NKTT7PixqHK4YG/exec';
@@ -156,58 +155,45 @@
         let curL1 = 'all', curL2 = 'all';
         let displayLimit = 60;
 
-        // 1. АВТОРИЗАЦІЯ (Рятувальний круг, якщо Telegram не віддає дані)
         async function checkAccess() {
             const user = tg.initDataUnsafe?.user;
-            
-            if (!user) {
-                console.log("Запущено поза Telegram або дані недоступні.");
-                loadModels();
-                return;
-            }
-
-            try {
-                // Відправка без await, щоб не блокувати завантаження
+            if (user) {
                 fetch(AUTH_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    cache: 'no-cache',
                     body: JSON.stringify({
                         action: 'check_user',
                         userId: String(user.id),
                         userName: user.username || (user.first_name + " " + (user.last_name || ""))
                     })
                 });
-            } catch (e) {
-                console.error("Auth error:", e);
             }
-            
-            loadModels(); // В будь-якому випадку вантажимо моделі
+            setTimeout(loadModels, 500); // Невелика затримка для стабільності
         }
 
-        // 2. ЗАВАНТАЖЕННЯ МОДЕЛЕЙ
         async function loadModels() {
             try {
                 const res = await fetch(JSON_URL);
                 const text = await res.text();
                 const json = JSON.parse(text.substr(47).slice(0, -2));
                 
-                allModels = json.table.rows.map(row => {
-                    if (!row.c || !row.c[0]) return null;
-                    let n = String(row.c[0].v).replace(/\[.*?\]/g, "").trim();
-                    let rawP = row.c[1] ? String(row.c[1].v) : "";
-                    let fId = "";
-                    if (rawP.includes('id=')) fId = rawP.split('id=')[1].split('&')[0];
-                    else if (rawP.includes('/d/')) fId = rawP.split('/d/')[1].split('/')[0];
-                    
-                    return { 
-                        id: fId || n, 
-                        name: n, 
-                        preview: fId ? `https://lh3.googleusercontent.com/u/0/d/${fId}` : rawP, 
-                        archive: row.c[2] ? String(row.c[2].v) : "#", 
-                        tags: row.c[3] ? String(row.c[3].v).toLowerCase() : "" 
-                    };
-                }).filter(m => m !== null && m.name !== "Без назви");
+                allModels = json.table.rows
+                    .filter(row => row.c && row.c[0] && row.c[0].v) // Фільтруємо порожні рядки
+                    .map(row => {
+                        let n = String(row.c[0].v).replace(/\[.*?\]/g, "").trim();
+                        let rawP = row.c[1] ? String(row.c[1].v) : "";
+                        let fId = "";
+                        if (rawP.includes('id=')) fId = rawP.split('id=')[1].split('&')[0];
+                        else if (rawP.includes('/d/')) fId = rawP.split('/d/')[1].split('/')[0];
+                        
+                        return { 
+                            id: fId || n, 
+                            name: n, 
+                            preview: fId ? `https://lh3.googleusercontent.com/u/0/d/${fId}` : rawP, 
+                            archive: row.c[2] ? String(row.c[2].v) : "#", 
+                            tags: row.c[3] ? String(row.c[3].v).toLowerCase() : "" 
+                        };
+                    });
 
                 initMenu();
                 renderModels(allModels);
@@ -221,6 +207,12 @@
 
         function initMenu() {
             const menu = document.getElementById('mainMenu');
+            // Очищуємо старе меню перед створенням нового
+            const existingBtns = menu.querySelectorAll('.btn-cat');
+            existingBtns.forEach(btn => {
+                if (btn.innerText !== "ВСІ МОДЕЛІ" && !btn.id.includes('fav')) btn.remove();
+            });
+
             Object.keys(categoryData).forEach(cat => {
                 const btn = document.createElement('button');
                 btn.className = 'btn-cat';
@@ -235,15 +227,18 @@
             btn.classList.add('active');
             curL1 = cat.toLowerCase().replace('_menu', '').replace('#', '');
             curL2 = 'all';
-            document.getElementById('midCategories').innerHTML = '';
-            document.getElementById('midCategories').style.display = 'flex';
+
+            const midDiv = document.getElementById('midCategories');
+            midDiv.innerHTML = '';
+            midDiv.style.display = 'flex';
             document.getElementById('subCategories').style.display = 'none';
+
             Object.keys(categoryData[cat]).forEach(mid => {
                 const mBtn = document.createElement('button');
                 mBtn.className = 'btn-cat';
                 mBtn.innerText = formatName(mid);
                 mBtn.onclick = () => selectLvl2(cat, mid, mBtn);
-                document.getElementById('midCategories').appendChild(mBtn);
+                midDiv.appendChild(mBtn);
             });
             filterModels();
         }
@@ -252,8 +247,10 @@
             document.querySelectorAll('#midCategories .btn-cat').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             curL2 = mid.toLowerCase().replace('_menu', '').replace('#', '');
-            document.getElementById('subCategories').innerHTML = '';
-            document.getElementById('subCategories').style.display = 'flex';
+            const subDiv = document.getElementById('subCategories');
+            subDiv.innerHTML = '';
+            subDiv.style.display = 'flex';
+
             categoryData[lvl1][mid].forEach(sub => {
                 const sBtn = document.createElement('button');
                 sBtn.className = 'btn-cat';
@@ -263,7 +260,7 @@
                     sBtn.classList.add('active');
                     filterModels(sub.toLowerCase().replace('#', ''));
                 };
-                document.getElementById('subCategories').appendChild(sBtn);
+                subDiv.appendChild(sBtn);
             });
             filterModels();
         }
@@ -283,20 +280,11 @@
             renderModels(filtered);
         }
 
-        function resetAll(btn) {
-            document.querySelectorAll('.btn-cat').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            curL1 = 'all'; curL2 = 'all';
-            displayLimit = 60;
-            document.getElementById('midCategories').style.display = 'none';
-            document.getElementById('subCategories').style.display = 'none';
-            renderModels(allModels);
-        }
-
         function renderModels(models) {
             const grid = document.getElementById('modelsGrid');
             grid.innerHTML = '';
             const visibleModels = models.slice(0, displayLimit);
+            
             visibleModels.forEach(m => {
                 const isFav = favorites.includes(m.id);
                 const card = document.createElement('div');
@@ -309,14 +297,28 @@
                 `;
                 grid.appendChild(card);
             });
+
             if (models.length > displayLimit) {
                 const moreBtn = document.createElement('button');
                 moreBtn.className = 'btn-cat';
                 moreBtn.style.cssText = "width: 100%; margin: 20px 0; padding: 15px; background: #333; color: #fff; border: 1px solid #444; cursor: pointer; font-weight: bold; border-radius: 8px;";
                 moreBtn.innerText = `ПОКАЗАТИ ЩЕ (Залишилось ${models.length - displayLimit})`;
-                moreBtn.onclick = () => { displayLimit += 100; renderModels(models); };
+                moreBtn.onclick = () => {
+                    displayLimit += 100;
+                    renderModels(models);
+                };
                 grid.appendChild(moreBtn);
             }
+        }
+
+        function resetAll(btn) {
+            document.querySelectorAll('.btn-cat').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            curL1 = 'all'; curL2 = 'all';
+            displayLimit = 60;
+            document.getElementById('midCategories').style.display = 'none';
+            document.getElementById('subCategories').style.display = 'none';
+            renderModels(allModels);
         }
 
         function toggleFavorite(id, btn) {
@@ -354,7 +356,6 @@
 
         document.getElementById('searchInput').oninput = () => filterModels();
         
-        // СТАРТ
         checkAccess();
     </script>
 </body>
