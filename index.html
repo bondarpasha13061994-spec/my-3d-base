@@ -26,11 +26,10 @@
         .btn-download { background: #28a745; color: white; text-decoration: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-top: auto; }
         .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; cursor: zoom-out; }
         .modal img { max-width: 95%; max-height: 95%; border-radius: 8px; }
-        #loader { text-align:center; padding:50px; }
     </style>
 </head>
 <body>
-    <div id="loader">
+    <div id="loader" style="text-align:center; padding:50px;">
         <div style="color:white; font-size:18px;">⌛ Завантаження бібліотеки...</div>
     </div>
 
@@ -131,7 +130,7 @@
             "#TECHNOLOGIES_MENU": {
                 "#AUDIO_APPLIANCES_MENU": ["#AUDIO_APPLIANCES", "#AUDIO_COLUMNS", "#AUDIO_SPEAKERS", "#AUDIO_CONSOLES", "#AUDIO_SYSTEMS", "#HEADPHONES", "#MICROPHONES", "#TAPE_RECORDERS", "#VINYL_PLAYERS"],
                 "#ELECTRONICS_MENU": ["#ELECTRONICS", "#CAMERAS", "#CAMERA_ACTION", "#CAMERA_STANDS", "#VIDEOCAMERAS", "#GAME_CONSOLES", "#NINTENDO", "#PLAYSTATION", "#XBOX", "#LAPTOPS", "#LAPTOP_AIRCOOLS", "#PC", "#PC_MONITORES", "#PC_PERIPHERALS", "#PC_SERVERS", "#PC_SET", "#PC_SYSTEM_UNIT", "#SMARTPHONES", "#TABLETS", "#TV", "#TV_PROPS", "#TV_SET", "#DVD", "#GAME_SIMULATORS"],
-                "#HOUSEHOLD_APPLIANCES_MENU": ["#HOUSEHOLD_APPLIANCES", "#AIR_CONDITIONING", "#AIR_CONDITIONER_SET", "#HIDDEN_AIR_CONDITIONERS", "#INDOOR_AIR_CONDITIONERS", "#OUTDOOR_AIR_CONDITIONERS", "#INTERCOMS", "#SEWING_MACHINE", "#VACUUM_CLEANER", "#CANISTER_VACUUMS", "#ROBOTIC_VACUUMS", "#UPRIGHT_VACUUMS"],
+                "#HOUSEHOLD_APPLIANCES_MENU": ["#HOUSEHOLD_APPLIANCES", "#AIR_CONDITIONING", "#AIR_CONDITIONER_SET", "#HIDDEN_AIR_CONDITIONERS", "#INDOOR_AIR_CONDITIONERS", "#OUTDOOR_AIR_CONDITIONERS", "#INTERCOMS", "#SEWING_MACHINE", "#VACUUM_CLEANER", "#ROBOTIC_VACUUMS", "#UPRIGHT_VACUUMS"],
                 "#OFFICE_APPLIANCES_MENU": ["#OFFICE_PHONES", "#PRINTERS", "#PROJECTORS", "#PROJECTOR_SCREENS", "#WATER_COOLERS"],
                 "#OTHER_TECH": ["#ENGENERING_APPLIANCES", "#SOCKETS", "#SWITCHES", "#ELECTRICAL_PANELS", "#RETRO_APPLAINCES", "#GRAMOPHONES", "#RETRO_CAMERAS", "#RETRO_PHONES", "#RETRO_RADIO", "#RETRO_TAPE_RECORDERS", "#RETRO_TYPEWRITERS", "#RETRO_PC", "#AIR_HUMIDIFIERS", "#ANTHENAS", "#CHARGING_STATIONS", "#ELECTRONIC_BOARDS", "#ELECTRIONIC_SCALES", "#ALARM_CLOCKS", "#MAGNITOLAS", "#QUADROCOPTERS", "#ROBOTS", "#ROUTERS", "#SAFES", "#SECURITY_SYSTEM", "#STAIR_LIFTS", "#TELESCOPES", "#CAR_CHARGERS", "#WATER_FILTERS", "#BANKNOTE_COUNTERS", "#AIR_PURIFIERS", "#VENTILATORS"]
             },
@@ -166,7 +165,8 @@
 
         // --- 1. АВТОРИЗАЦІЯ ---
         function checkAccess() {
-            loadModels(); // Паралельне завантаження для швидкості!
+            // Паралельний запуск: завантажуємо моделі відразу, не чекаючи Google Script
+            loadModels();
             
             const user = tg.initDataUnsafe?.user;
             if (!user) return; 
@@ -183,9 +183,11 @@
             document.body.appendChild(script);
         }
 
+        // Глобальна функція для обробки відповіді від Google
         window.authHandler = function(data) {
             console.log("Статус доступу:", data);
             if (!data.access) {
+                // Якщо доступу немає, показуємо екран оплати і блокуємо сторінку
                 document.getElementById('paywall').style.display = 'flex';
                 document.body.style.overflow = 'hidden';
             }
@@ -210,7 +212,7 @@
                         return { 
                             id: fId || n, 
                             name: n, 
-                            preview: fId ? `https://lh3.googleusercontent.com/u/0/d/$${fId}` : rawP, 
+                            preview: fId ? `https://lh3.googleusercontent.com/u/0/d/${fId}` : rawP, 
                             archive: row.c[2] ? String(row.c[2].v) : "#", 
                             tags: row.c[3] ? String(row.c[3].v).toLowerCase() : "" 
                         };
@@ -303,7 +305,7 @@
             const visibleModels = models.slice(0, displayLimit);
             
             // Приховуємо лоадер, коли моделі почали з'являтися
-            document.getElementById('loader').style.display = 'none';
+            if (document.getElementById('loader')) document.getElementById('loader').style.display = 'none';
 
             visibleModels.forEach(m => {
                 const isFav = favorites.includes(m.id);
@@ -378,6 +380,7 @@
 
         document.getElementById('searchInput').oninput = () => filterModels();
         
+        // СТАРТ
         checkAccess();
     </script>
 </body>
