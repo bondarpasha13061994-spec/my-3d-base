@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Model Library</title>
+    <title>3D models IMAGINATE</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 15px; }
@@ -29,30 +29,37 @@
     </style>
 </head>
 <body>
+
     <div id="loader" style="text-align:center; padding:50px;">
-        <div style="color:white; font-size:18px;">⌛ Завантаження бібліотеки...</div>
+        <div style="color:white; font-size:18px;">⌛ Перевірка підписки IMAGINATE...</div>
     </div>
 
     <div id="paywall" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#121212; z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
-        <h2 style="color:#ff4757;">⌛ Тестовий період закінчився</h2>
-        <p>Ваш безкоштовний доступ (20 днів) вичерпано.<br>Підтримайте проект, щоб отримати повний доступ до 15,000 моделей.</p>
-        <a href="https://wayforpay.com/..." style="display:inline-block; background:#28a745; color:white; padding:15px 30px; border-radius:10px; text-decoration:none; font-weight:bold; margin-top:20px;">Оплатити доступ — 150 грн</a>
+        <h2 style="color:#ff4757;">⌛ Термін доступу вичерпано</h2>
+        <p>Ваша підписка закінчилася. Підтримайте проект,<br>щоб отримати безлімітний доступ до бази.</p>
+        <a href="https://secure.wayforpay.com/button/b439dcbe8d79b" style="display:inline-block; background:#28a745; color:white; padding:15px 30px; border-radius:10px; text-decoration:none; font-weight:bold; margin-top:20px;">Оплатити доступ — 150 грн</a>
     </div>
 
-    <div id="imageModal" class="modal" onclick="this.style.display='none'"><img id="modalImg" src=""></div>
-    <input type="text" id="searchInput" placeholder="Пошук моделі...">
-    
-    <div id="mainMenu" class="menu-container">
-        <button class="btn-cat active" onclick="resetAll(this)">Всі моделі</button>
-        <button class="btn-cat btn-favorites" id="favCounterBtn" onclick="showFavorites(this)">❤️ ОБРАНЕ (0)</button>
-        <button class="btn-cat" id="clearFavsBtn" onclick="clearAllFavorites()">🗑️ ОЧИСТИТИ</button>
-    </div>
+    <div id="mainApp" style="display:none;">
+        <div id="imageModal" class="modal" onclick="this.style.display='none'"><img id="modalImg" src=""></div>
+        <input type="text" id="searchInput" placeholder="Пошук моделі...">
+        
+        <div id="mainMenu" class="menu-container">
+            <button class="btn-cat active" onclick="resetAll(this)">Всі моделі</button>
+            <button class="btn-cat btn-favorites" id="favCounterBtn" onclick="showFavorites(this)">❤️ ОБРАНЕ (0)</button>
+            <button class="btn-cat" id="clearFavsBtn" onclick="clearAllFavorites()">🗑️ ОЧИСТИТИ</button>
+        </div>
 
-    <div id="midCategories" class="menu-container"></div>
-    <div id="subCategories" class="menu-container"></div>
-    <div id="modelsGrid" class="models-grid"></div>
+        <div id="midCategories" class="menu-container"></div>
+        <div id="subCategories" class="menu-container"></div>
+        <div id="modelsGrid" class="models-grid"></div>
+    </div>
 
     <script>
+        const SHEET_ID = '1bcX0zQphJsAmFTySQ_iWYpNXgFnNZ5XGBHpGGvHI9K8';
+        const JSON_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+        const AUTH_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxeJAo0aJXF_nHM0va-tf0x2x4fgThMqfRkEDL2ki58nl4dQUjTc7NKTT7PixqHK4YG/exec';
+
         const categoryData = {
             "#ARCHITECTURE_ELEMENTS_MENU": {
                 "#DOORS_MENU": ["#ENTRANCE_DOORS", "#INTERIOR_DOORS", "#SLIDING_DOORS", "#FACADE_DOORS", "#FIRE_DOORS", "#DOOR_HANDLES"],
@@ -91,13 +98,13 @@
                 "#CHEST_OF_DRAWERS_MENU": ["#CLASSICAL_CHEST_OF_DRAWERS", "#MODERN_CHEST_OF_DRAWERS", "#WOODEN_CHEST_OF_DRAWERS"],
                 "#OUTDOOR_FURNITURE_MENU": ["#OUTDOOR_ARMCHAIRS", "#OUTDOOR_SOFAS", "#OUTDOOR_TABLES", "#OUTDOOR_SET"]
             },
-          "#KIDS_MENU": {
-        "#CHILDRENS_FURNITURE": ["#BABIES_BEDS", "#CHILDRENS_SOFA_BEDS", "#CORNER_BEDS", "#DOUBLE_BEDS", "#HOUSE_CHILDRENS_BEDS", "#SINGLE_BEDS", "#CLASSICAL_CHILDRENS_BEDS", "#MODERN_CHILDRENS_BEDS", "#WOODEN_CHILDRENS_BEDS", "#METALNESS_CHILDRENS_BEDS", "#CHILDRENS_BED_BEDSIDE_TABLES_SET", "#CHILDRENS_CABINETS", "#CHILDRENS_CHAIRS", "#CHILDRENS_CHEST_OF_DRAWERS", "#CHILDRENS_FURNITURE_SET", "#CHILDRENS_FURNITURE_WALLS", "#CHILDRENS_CHAIRS_TABLES_SET", "#CHILDRENS_SOFT_SEATING", "#CHILDRENS_RACKS"],
-        "#CHILD_TENTS": [],
-        "#CHILDROOM_DECORATION": ["#BALLS_POOLS", "#CHALK_BOARDS", "#CHILDROOM_BASKETS", "#CHILD_PICTURES", "#STATIONERIES", "#CHILD_CARPETS"],
-        "#CHILDROOM_SET": ["#CHILD_GARDEN", "#CHILDROOM_RACKS", "#CHILDROOM_SPORT_WALLS", "#CHILDROOMS_SEATING"],
-        "#TOYS": ["#DOLLS", "#FIGURINES_TOYS", "#KAWS", "#OTHER_TOYS", "#SIMULATION_TOYS", "#STUFFED_ANIMALS", "#ROCKING_TOYS", "#TOYS_BASKETS", "#TOYS_CONSTRUCTOR", "#TOYS_LEGO"]
-    },
+            "#KIDS_MENU": {
+                "#CHILDRENS_FURNITURE": ["#BABIES_BEDS", "#CHILDRENS_SOFA_BEDS", "#CORNER_BEDS", "#DOUBLE_BEDS", "#HOUSE_CHILDRENS_BEDS", "#SINGLE_BEDS", "#CLASSICAL_CHILDRENS_BEDS", "#MODERN_CHILDRENS_BEDS", "#WOODEN_CHILDRENS_BEDS", "#METALNESS_CHILDRENS_BEDS", "#CHILDRENS_BED_BEDSIDE_TABLES_SET", "#CHILDRENS_CABINETS", "#CHILDRENS_CHAIRS", "#CHILDRENS_CHEST_OF_DRAWERS", "#CHILDRENS_FURNITURE_SET", "#CHILDRENS_FURNITURE_WALLS", "#CHILDRENS_CHAIRS_TABLES_SET", "#CHILDRENS_SOFT_SEATING", "#CHILDRENS_RACKS"],
+                "#CHILD_TENTS": [],
+                "#CHILDROOM_DECORATION": ["#BALLS_POOLS", "#CHALK_BOARDS", "#CHILDROOM_BASKETS", "#CHILD_PICTURES", "#STATIONERIES", "#CHILD_CARPETS"],
+                "#CHILDROOM_SET": ["#CHILD_GARDEN", "#CHILDROOM_RACKS", "#CHILDROOM_SPORT_WALLS", "#CHILDROOMS_SEATING"],
+                "#TOYS": ["#DOLLS", "#FIGURINES_TOYS", "#KAWS", "#OTHER_TOYS", "#SIMULATION_TOYS", "#STUFFED_ANIMALS", "#ROCKING_TOYS", "#TOYS_BASKETS", "#TOYS_CONSTRUCTOR", "#TOYS_LEGO"]
+            },
             "#DECORATION_MENU": {
                 "#WALL_DECORATION_MENU": ["#DECORATIVE_MASKS", "#MACRAME", "#SINGLE_WALL_DECORATION", "#WALL_DECORATION_SET", "#WALL_HEADS", "#WALL_MAPS", "#WOOD_DECORATION"],
                 "#WALL_PANELS_MENU": ["#FLOORING_SCREENS", "#GLASS_PARTITIONS", "#GYPSUM_PANELS", "#HEADBOARD_PANELS", "#METALNESS_PANELS", "#PANGU_PANELS", "#PARTITIONS", "#SOFT_PANELS", "#STONE_PANELS", "#WOODEN_PANELS"],
@@ -158,10 +165,6 @@
             }
         };
 
-        const SHEET_ID = '1bcX0zQphJsAmFTySQ_iWYpNXgFnNZ5XGBHpGGvHI9K8';
-        const JSON_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
-        const AUTH_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxeJAo0aJXF_nHM0va-tf0x2x4fgThMqfRkEDL2ki58nl4dQUjTc7NKTT7PixqHK4YG/exec';
-
         const tg = window.Telegram.WebApp;
         tg.expand();
 
@@ -170,37 +173,48 @@
         let curL1 = 'all', curL2 = 'all';
         let displayLimit = 60;
 
-        // --- 1. АВТОРИЗАЦІЯ ---
-        function checkAccess() {
-            // Паралельний запуск: завантажуємо моделі відразу, не чекаючи Google Script
-            loadModels();
-            
+        // --- 1. АВТОРИЗАЦІЯ (ГОЛОВНА ФУНКЦІЯ) ---
+
+        // Глобальний обробник відповіді (сюди стукає Google)
+        window.authHandler = function(data) {
+            console.log("Відповідь авторизації:", data);
+            if (data && data.access) {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                loadModels();
+            } else {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('paywall').style.display = 'flex';
+            }
+        };
+
+        function startAuth() {
             const user = tg.initDataUnsafe?.user;
-            if (!user) return; 
+            if (!user) {
+                // Якщо зайти не з Телеграм - показуємо замок
+                document.getElementById('paywall').style.display = 'flex';
+                document.getElementById('loader').style.display = 'none';
+                return;
+            }
 
             const userId = String(user.id);
             const userName = encodeURIComponent(user.username || (user.first_name + " " + (user.last_name || "")));
 
-            const oldScript = document.getElementById('auth-script');
-            if (oldScript) oldScript.remove();
-
+            // Створюємо скрипт-тег для JSONP запиту
             const script = document.createElement('script');
-            script.id = 'auth-script';
             script.src = `${AUTH_SCRIPT_URL}?userId=${userId}&userName=${userName}&callback=authHandler&t=${Date.now()}`;
             document.body.appendChild(script);
+
+            // Тайм-аут на випадок збою мережі
+            setTimeout(() => {
+                if (document.getElementById('loader').style.display !== 'none') {
+                    document.getElementById('loader').innerHTML = '<div style="color:#ff4757;">Помилка мережі. Оновіть сторінку (Reload).</div>';
+                }
+            }, 8000);
         }
 
-        // Глобальна функція для обробки відповіді від Google
-        window.authHandler = function(data) {
-            console.log("Статус доступу:", data);
-            if (!data.access) {
-                // Якщо доступу немає, показуємо екран оплати і блокуємо сторінку
-                document.getElementById('paywall').style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            }
-        };
+        // --- 2. РОБОТА З МОДЕЛЯМИ ---
 
-        // --- 2. ЗАВАНТАЖЕННЯ МОДЕЛЕЙ ---
         async function loadModels() {
             try {
                 const res = await fetch(JSON_URL);
@@ -219,7 +233,7 @@
                         return { 
                             id: fId || n, 
                             name: n, 
-                            preview: fId ? `https://lh3.googleusercontent.com/u/0/d/${fId}` : rawP, 
+                            preview: fId ? `https://googleusercontent.com/profile/picture/0{fId}` : rawP, // Твоє оригінальне превью
                             archive: row.c[2] ? String(row.c[2].v) : "#", 
                             tags: row.c[3] ? String(row.c[3].v).toLowerCase() : "" 
                         };
@@ -228,9 +242,7 @@
                 initMenu();
                 renderModels(allModels);
                 updateFavCounter();
-            } catch (err) { 
-                console.error("Помилка завантаження бази:", err); 
-            }
+            } catch (err) { console.error("Error loading models:", err); }
         }
 
         function formatName(str) {
@@ -311,9 +323,6 @@
             grid.innerHTML = '';
             const visibleModels = models.slice(0, displayLimit);
             
-            // Приховуємо лоадер, коли моделі почали з'являтися
-            if (document.getElementById('loader')) document.getElementById('loader').style.display = 'none';
-
             visibleModels.forEach(m => {
                 const isFav = favorites.includes(m.id);
                 const card = document.createElement('div');
@@ -386,9 +395,10 @@
         }
 
         document.getElementById('searchInput').oninput = () => filterModels();
-        
-        // СТАРТ
-        checkAccess();
+
+        // ЗАПУСК
+        startAuth();
+
     </script>
 </body>
 </html>
