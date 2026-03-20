@@ -91,13 +91,13 @@
                 "#CHEST_OF_DRAWERS_MENU": ["#CLASSICAL_CHEST_OF_DRAWERS", "#MODERN_CHEST_OF_DRAWERS", "#WOODEN_CHEST_OF_DRAWERS"],
                 "#OUTDOOR_FURNITURE_MENU": ["#OUTDOOR_ARMCHAIRS", "#OUTDOOR_SOFAS", "#OUTDOOR_TABLES", "#OUTDOOR_SET"]
             },
-          "#KIDS_MENU": {
-        "#CHILDRENS_FURNITURE": ["#BABIES_BEDS", "#CHILDRENS_SOFA_BEDS", "#CORNER_BEDS", "#DOUBLE_BEDS", "#HOUSE_CHILDRENS_BEDS", "#SINGLE_BEDS", "#CLASSICAL_CHILDRENS_BEDS", "#MODERN_CHILDRENS_BEDS", "#WOODEN_CHILDRENS_BEDS", "#METALNESS_CHILDRENS_BEDS", "#CHILDRENS_BED_BEDSIDE_TABLES_SET", "#CHILDRENS_CABINETS", "#CHILDRENS_CHAIRS", "#CHILDRENS_CHEST_OF_DRAWERS", "#CHILDRENS_FURNITURE_SET", "#CHILDRENS_FURNITURE_WALLS", "#CHILDRENS_CHAIRS_TABLES_SET", "#CHILDRENS_SOFT_SEATING", "#CHILDRENS_RACKS"],
-        "#CHILD_TENTS": [],
-        "#CHILDROOM_DECORATION": ["#BALLS_POOLS", "#CHALK_BOARDS", "#CHILDROOM_BASKETS", "#CHILD_PICTURES", "#STATIONERIES", "#CHILD_CARPETS"],
-        "#CHILDROOM_SET": ["#CHILD_GARDEN", "#CHILDROOM_RACKS", "#CHILDROOM_SPORT_WALLS", "#CHILDROOMS_SEATING"],
-        "#TOYS": ["#DOLLS", "#FIGURINES_TOYS", "#KAWS", "#OTHER_TOYS", "#SIMULATION_TOYS", "#STUFFED_ANIMALS", "#ROCKING_TOYS", "#TOYS_BASKETS", "#TOYS_CONSTRUCTOR", "#TOYS_LEGO"]
-    },
+            "#KIDS_MENU": {
+                "#CHILDRENS_FURNITURE": ["#BABIES_BEDS", "#CHILDRENS_SOFA_BEDS", "#CORNER_BEDS", "#DOUBLE_BEDS", "#HOUSE_CHILDRENS_BEDS", "#SINGLE_BEDS", "#CLASSICAL_CHILDRENS_BEDS", "#MODERN_CHILDRENS_BEDS", "#WOODEN_CHILDRENS_BEDS", "#METALNESS_CHILDRENS_BEDS", "#CHILDRENS_BED_BEDSIDE_TABLES_SET", "#CHILDRENS_CABINETS", "#CHILDRENS_CHAIRS", "#CHILDRENS_CHEST_OF_DRAWERS", "#CHILDRENS_FURNITURE_SET", "#CHILDRENS_FURNITURE_WALLS", "#CHILDRENS_CHAIRS_TABLES_SET", "#CHILDRENS_SOFT_SEATING", "#CHILDRENS_RACKS"],
+                "#CHILD_TENTS": [],
+                "#CHILDROOM_DECORATION": ["#BALLS_POOLS", "#CHALK_BOARDS", "#CHILDROOM_BASKETS", "#CHILD_PICTURES", "#STATIONERIES", "#CHILD_CARPETS"],
+                "#CHILDROOM_SET": ["#CHILD_GARDEN", "#CHILDROOM_RACKS", "#CHILDROOM_SPORT_WALLS", "#CHILDROOMS_SEATING"],
+                "#TOYS": ["#DOLLS", "#FIGURINES_TOYS", "#KAWS", "#OTHER_TOYS", "#SIMULATION_TOYS", "#STUFFED_ANIMALS", "#ROCKING_TOYS", "#TOYS_BASKETS", "#TOYS_CONSTRUCTOR", "#TOYS_LEGO"]
+            },
             "#DECORATION_MENU": {
                 "#WALL_DECORATION_MENU": ["#DECORATIVE_MASKS", "#MACRAME", "#SINGLE_WALL_DECORATION", "#WALL_DECORATION_SET", "#WALL_HEADS", "#WALL_MAPS", "#WOOD_DECORATION"],
                 "#WALL_PANELS_MENU": ["#FLOORING_SCREENS", "#GLASS_PARTITIONS", "#GYPSUM_PANELS", "#HEADBOARD_PANELS", "#METALNESS_PANELS", "#PANGU_PANELS", "#PARTITIONS", "#SOFT_PANELS", "#STONE_PANELS", "#WOODEN_PANELS"],
@@ -126,7 +126,7 @@
                 "#OUTDOOR_LAMPS_MENU": ["#STREET_LAMPS", "#PAVEMENT_LAMPS", "#HANGING_OUTDOOR_LAMPS"],
                 "#CEILING_LAMPS_MENU": ["#CLASSICAL_CEILING_LAMPS", "#MODERN_CEILING_LAMPS", "#FANS"],
                 "#TECHNICAL_LAMPS_MENU": ["#TECHNICAL_LAMPS", "#GARLANDS", "#NEON_TEXT", "#STUDIO_LAMPS"],
-                "#OTHER_LIGHT": ["#FLOOR_LAMPS", "#CLASSICAL_FLOOR_LAMPS", "#MODERN_FLOOR_LAMPS", "#TABLE_LAMPS", "#CLASSICAL_TABLE_LAMPS", "#MODERN_TABLE_LAMPS", "#LAMPS_SET", "#CLASSICAL_LAMPS_SET", "#MODERN_LAMPS_SET"]
+                "#OTHER_LIGHT": ["#FLOOR_LAMPS", "#CLASSICAL_FLOOR_LAMPS", "#MODERN_FLOOR_LAMPS", "#TABLE_LAMPS", "#CLASSICAL_TABLE_LAMPS", "#MODERN_TABLE_LAMPS", "#職業_LAMPS_SET", "#CLASSICAL_LAMPS_SET", "#MODERN_LAMPS_SET"]
             },
             "#NATURE_MENU": {
                 "#PLANTS_MENU": ["#POTTED_INDOOR_PLANTS", "#DECORATIVE_PLANTS", "#HANGING_PLANTS", "#FLOWERS"],
@@ -170,9 +170,17 @@
         let curL1 = 'all', curL2 = 'all';
         let displayLimit = 60;
 
-        // --- 1. АВТОРИЗАЦІЯ ---
+        // --- ГЛОБАЛЬНА ФУНКЦІЯ АВТОРИЗАЦІЇ (ВИПРАВЛЕНО) ---
+        window.authHandler = function(data) {
+            console.log("Статус доступу:", data);
+            if (!data.access) {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('paywall').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        };
+
         function checkAccess() {
-            // Паралельний запуск: завантажуємо моделі відразу, не чекаючи Google Script
             loadModels();
             
             const user = tg.initDataUnsafe?.user;
@@ -186,21 +194,11 @@
 
             const script = document.createElement('script');
             script.id = 'auth-script';
+            // Додано &t= для скидання кешу запиту
             script.src = `${AUTH_SCRIPT_URL}?userId=${userId}&userName=${userName}&callback=authHandler&t=${Date.now()}`;
             document.body.appendChild(script);
         }
 
-        // Глобальна функція для обробки відповіді від Google
-        window.authHandler = function(data) {
-            console.log("Статус доступу:", data);
-            if (!data.access) {
-                // Якщо доступу немає, показуємо екран оплати і блокуємо сторінку
-                document.getElementById('paywall').style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            }
-        };
-
-        // --- 2. ЗАВАНТАЖЕННЯ МОДЕЛЕЙ ---
         async function loadModels() {
             try {
                 const res = await fetch(JSON_URL);
@@ -311,7 +309,6 @@
             grid.innerHTML = '';
             const visibleModels = models.slice(0, displayLimit);
             
-            // Приховуємо лоадер, коли моделі почали з'являтися
             if (document.getElementById('loader')) document.getElementById('loader').style.display = 'none';
 
             visibleModels.forEach(m => {
@@ -386,8 +383,6 @@
         }
 
         document.getElementById('searchInput').oninput = () => filterModels();
-        
-        // СТАРТ
         checkAccess();
     </script>
 </body>
