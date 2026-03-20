@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D models IMAGINATE</title>
+    <title>3D Model Library</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 15px; }
@@ -30,28 +30,27 @@
 </head>
 <body>
     <div id="loader" style="text-align:center; padding:50px;">
-        <div style="color:white; font-size:18px;">⌛ Перевірка доступу IMAGINATE...</div>
+        <div style="color:white; font-size:18px;">⌛ Завантаження бібліотеки...</div>
     </div>
 
     <div id="paywall" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#121212; z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
-        <h2 style="color:#ff4757;">⌛ Термін доступу вичерпано</h2>
-        <p>Ваша підписка на базу <b>IMAGINATE</b> закінчилася.<br>Підтримайте проект, щоб отримати повний доступ.</p>
-        <a href="https://secure.wayforpay.com/button/b439dcbe8d79b" style="display:inline-block; background:#28a745; color:white; padding:15px 30px; border-radius:10px; text-decoration:none; font-weight:bold; margin-top:20px;">Продовжити доступ — 150 грн</a>
+        <h2 style="color:#ff4757;">⌛ Тестовий період закінчився</h2>
+        <p>Ваш безкоштовний доступ (20 днів) вичерпано.<br>Підтримайте проект, щоб отримати повний доступ до 15,000 моделей.</p>
+        <a href="https://wayforpay.com/..." style="display:inline-block; background:#28a745; color:white; padding:15px 30px; border-radius:10px; text-decoration:none; font-weight:bold; margin-top:20px;">Оплатити доступ — 150 грн</a>
     </div>
 
     <div id="imageModal" class="modal" onclick="this.style.display='none'"><img id="modalImg" src=""></div>
+    <input type="text" id="searchInput" placeholder="Пошук моделі...">
     
-    <div id="appContent" style="display:none;">
-        <input type="text" id="searchInput" placeholder="Пошук моделі...">
-        <div id="mainMenu" class="menu-container">
-            <button class="btn-cat active" onclick="resetAll(this)">Всі моделі</button>
-            <button class="btn-cat btn-favorites" id="favCounterBtn" onclick="showFavorites(this)">❤️ ОБРАНЕ (0)</button>
-            <button class="btn-cat" id="clearFavsBtn" onclick="clearAllFavorites()">🗑️ ОЧИСТИТИ</button>
-        </div>
-        <div id="midCategories" class="menu-container"></div>
-        <div id="subCategories" class="menu-container"></div>
-        <div id="modelsGrid" class="models-grid"></div>
+    <div id="mainMenu" class="menu-container">
+        <button class="btn-cat active" onclick="resetAll(this)">Всі моделі</button>
+        <button class="btn-cat btn-favorites" id="favCounterBtn" onclick="showFavorites(this)">❤️ ОБРАНЕ (0)</button>
+        <button class="btn-cat" id="clearFavsBtn" onclick="clearAllFavorites()">🗑️ ОЧИСТИТИ</button>
     </div>
+
+    <div id="midCategories" class="menu-container"></div>
+    <div id="subCategories" class="menu-container"></div>
+    <div id="modelsGrid" class="models-grid"></div>
 
     <script>
         const categoryData = {
@@ -92,13 +91,13 @@
                 "#CHEST_OF_DRAWERS_MENU": ["#CLASSICAL_CHEST_OF_DRAWERS", "#MODERN_CHEST_OF_DRAWERS", "#WOODEN_CHEST_OF_DRAWERS"],
                 "#OUTDOOR_FURNITURE_MENU": ["#OUTDOOR_ARMCHAIRS", "#OUTDOOR_SOFAS", "#OUTDOOR_TABLES", "#OUTDOOR_SET"]
             },
-            "#KIDS_MENU": {
-                "#CHILDRENS_FURNITURE": ["#BABIES_BEDS", "#CHILDRENS_SOFA_BEDS", "#CORNER_BEDS", "#DOUBLE_BEDS", "#HOUSE_CHILDRENS_BEDS", "#SINGLE_BEDS", "#CLASSICAL_CHILDRENS_BEDS", "#MODERN_CHILDRENS_BEDS", "#WOODEN_CHILDRENS_BEDS", "#METALNESS_CHILDRENS_BEDS", "#CHILDRENS_BED_BEDSIDE_TABLES_SET", "#CHILDRENS_CABINETS", "#CHILDRENS_CHAIRS", "#CHILDRENS_CHEST_OF_DRAWERS", "#CHILDRENS_FURNITURE_SET", "#CHILDRENS_FURNITURE_WALLS", "#CHILDRENS_CHAIRS_TABLES_SET", "#CHILDRENS_SOFT_SEATING", "#CHILDRENS_RACKS"],
-                "#CHILD_TENTS": [],
-                "#CHILDROOM_DECORATION": ["#BALLS_POOLS", "#CHALK_BOARDS", "#CHILDROOM_BASKETS", "#CHILD_PICTURES", "#STATIONERIES", "#CHILD_CARPETS"],
-                "#CHILDROOM_SET": ["#CHILD_GARDEN", "#CHILDROOM_RACKS", "#CHILDROOM_SPORT_WALLS", "#CHILDROOMS_SEATING"],
-                "#TOYS": ["#DOLLS", "#FIGURINES_TOYS", "#KAWS", "#OTHER_TOYS", "#SIMULATION_TOYS", "#STUFFED_ANIMALS", "#ROCKING_TOYS", "#TOYS_BASKETS", "#TOYS_CONSTRUCTOR", "#TOYS_LEGO"]
-            },
+          "#KIDS_MENU": {
+        "#CHILDRENS_FURNITURE": ["#BABIES_BEDS", "#CHILDRENS_SOFA_BEDS", "#CORNER_BEDS", "#DOUBLE_BEDS", "#HOUSE_CHILDRENS_BEDS", "#SINGLE_BEDS", "#CLASSICAL_CHILDRENS_BEDS", "#MODERN_CHILDRENS_BEDS", "#WOODEN_CHILDRENS_BEDS", "#METALNESS_CHILDRENS_BEDS", "#CHILDRENS_BED_BEDSIDE_TABLES_SET", "#CHILDRENS_CABINETS", "#CHILDRENS_CHAIRS", "#CHILDRENS_CHEST_OF_DRAWERS", "#CHILDRENS_FURNITURE_SET", "#CHILDRENS_FURNITURE_WALLS", "#CHILDRENS_CHAIRS_TABLES_SET", "#CHILDRENS_SOFT_SEATING", "#CHILDRENS_RACKS"],
+        "#CHILD_TENTS": [],
+        "#CHILDROOM_DECORATION": ["#BALLS_POOLS", "#CHALK_BOARDS", "#CHILDROOM_BASKETS", "#CHILD_PICTURES", "#STATIONERIES", "#CHILD_CARPETS"],
+        "#CHILDROOM_SET": ["#CHILD_GARDEN", "#CHILDROOM_RACKS", "#CHILDROOM_SPORT_WALLS", "#CHILDROOMS_SEATING"],
+        "#TOYS": ["#DOLLS", "#FIGURINES_TOYS", "#KAWS", "#OTHER_TOYS", "#SIMULATION_TOYS", "#STUFFED_ANIMALS", "#ROCKING_TOYS", "#TOYS_BASKETS", "#TOYS_CONSTRUCTOR", "#TOYS_LEGO"]
+    },
             "#DECORATION_MENU": {
                 "#WALL_DECORATION_MENU": ["#DECORATIVE_MASKS", "#MACRAME", "#SINGLE_WALL_DECORATION", "#WALL_DECORATION_SET", "#WALL_HEADS", "#WALL_MAPS", "#WOOD_DECORATION"],
                 "#WALL_PANELS_MENU": ["#FLOORING_SCREENS", "#GLASS_PARTITIONS", "#GYPSUM_PANELS", "#HEADBOARD_PANELS", "#METALNESS_PANELS", "#PANGU_PANELS", "#PARTITIONS", "#SOFT_PANELS", "#STONE_PANELS", "#WOODEN_PANELS"],
@@ -171,26 +170,13 @@
         let curL1 = 'all', curL2 = 'all';
         let displayLimit = 60;
 
-        // Глобальна функція обробки відповіді від Google Script
-        window.authHandler = function(data) {
-            console.log("Статус доступу:", data);
-            if (data && data.access) {
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('appContent').style.display = 'block';
-                loadModels();
-            } else {
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('paywall').style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            }
-        };
-
+        // --- 1. АВТОРИЗАЦІЯ ---
         function checkAccess() {
+            // Паралельний запуск: завантажуємо моделі відразу, не чекаючи Google Script
+            loadModels();
+            
             const user = tg.initDataUnsafe?.user;
-            if (!user) {
-                document.getElementById('paywall').style.display = 'flex';
-                return;
-            } 
+            if (!user) return; 
 
             const userId = String(user.id);
             const userName = encodeURIComponent(user.username || (user.first_name + " " + (user.last_name || "")));
@@ -200,11 +186,21 @@
 
             const script = document.createElement('script');
             script.id = 'auth-script';
-            // Додано Timestamp (&t=), щоб уникнути кешування в Telegram
             script.src = `${AUTH_SCRIPT_URL}?userId=${userId}&userName=${userName}&callback=authHandler&t=${Date.now()}`;
             document.body.appendChild(script);
         }
 
+        // Глобальна функція для обробки відповіді від Google
+        window.authHandler = function(data) {
+            console.log("Статус доступу:", data);
+            if (!data.access) {
+                // Якщо доступу немає, показуємо екран оплати і блокуємо сторінку
+                document.getElementById('paywall').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        };
+
+        // --- 2. ЗАВАНТАЖЕННЯ МОДЕЛЕЙ ---
         async function loadModels() {
             try {
                 const res = await fetch(JSON_URL);
@@ -223,8 +219,7 @@
                         return { 
                             id: fId || n, 
                             name: n, 
-                            // Виправлено синтаксис превью (${fId})
-                            preview: fId ? `https://googleusercontent.com/profile/picture/0${fId}` : rawP, 
+                            preview: fId ? `https://lh3.googleusercontent.com/u/0/d/${fId}` : rawP, 
                             archive: row.c[2] ? String(row.c[2].v) : "#", 
                             tags: row.c[3] ? String(row.c[3].v).toLowerCase() : "" 
                         };
@@ -315,6 +310,9 @@
             const grid = document.getElementById('modelsGrid');
             grid.innerHTML = '';
             const visibleModels = models.slice(0, displayLimit);
+            
+            // Приховуємо лоадер, коли моделі почали з'являтися
+            if (document.getElementById('loader')) document.getElementById('loader').style.display = 'none';
 
             visibleModels.forEach(m => {
                 const isFav = favorites.includes(m.id);
@@ -377,10 +375,8 @@
 
         function clearAllFavorites() {
             if (confirm("Очистити обране?")) {
-                favorites = []; 
-                localStorage.setItem('my3dFavs', JSON.stringify(favorites));
-                updateFavCounter(); 
-                renderModels(allModels);
+                favorites = []; localStorage.setItem('my3dFavs', JSON.stringify(favorites));
+                updateFavCounter(); renderModels(allModels);
             }
         }
 
