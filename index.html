@@ -30,25 +30,23 @@
 </head>
 <body>
     <div id="loader" style="text-align:center; padding:50px;">
-        <div style="color:white; font-size:18px;">⌛ Перевірка доступу...</div>
+        <div style="color:white; font-size:18px;">⌛ Перевірка підписки IMAGINATE...</div>
     </div>
 
     <div id="paywall" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#121212; z-index:9999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
-        <h2 style="color:#ff4757;">⌛ Термін дії вичерпано</h2>
-        <p>Ваша підписка закінчилася. Підтримайте проект для отримання доступу.</p>
+        <h2 style="color:#ff4757;">⌛ Доступ обмежено</h2>
+        <p>Ваша підписка закінчилася.<br>Підтримайте проект для отримання повного доступу.</p>
         <a href="https://wayforpay.com/..." style="display:inline-block; background:#28a745; color:white; padding:15px 30px; border-radius:10px; text-decoration:none; font-weight:bold; margin-top:20px;">Оплатити доступ — 150 грн</a>
     </div>
 
-    <div id="mainApp" style="display:none;">
+    <div id="appContent" style="display:none;">
         <div id="imageModal" class="modal" onclick="this.style.display='none'"><img id="modalImg" src=""></div>
         <input type="text" id="searchInput" placeholder="Пошук моделі...">
-        
         <div id="mainMenu" class="menu-container">
             <button class="btn-cat active" onclick="resetAll(this)">Всі моделі</button>
             <button class="btn-cat btn-favorites" id="favCounterBtn" onclick="showFavorites(this)">❤️ ОБРАНЕ (0)</button>
             <button class="btn-cat" id="clearFavsBtn" onclick="clearAllFavorites()">🗑️ ОЧИСТИТИ</button>
         </div>
-
         <div id="midCategories" class="menu-container"></div>
         <div id="subCategories" class="menu-container"></div>
         <div id="modelsGrid" class="models-grid"></div>
@@ -59,9 +57,6 @@
         const JSON_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
         const AUTH_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxeJAo0aJXF_nHM0va-tf0x2x4fgThMqfRkEDL2ki58nl4dQUjTc7NKTT7PixqHK4YG/exec';
 
-        // ... categoryData залишається без змін ...
-        const categoryData = { "#ARCHITECTURE_ELEMENTS_MENU": { "#DOORS_MENU": ["#ENTRANCE_DOORS", "#INTERIOR_DOORS", "#SLIDING_DOORS", "#FACADE_DOORS", "#FIRE_DOORS", "#DOOR_HANDLES"], "#WINDOWS_MENU": ["#PANORAMIC_WINDOWS", "#DORMER_WINDOWS", "#FACADE_WINDOWS", "#VITRAGE_WINDOWS", "#SHUTTERS", "#WINDOWS_SET"], "#STAIRS_MENU": ["#SPIRAL_STAIRS", "#SINGLESTEP_STAIRS", "#MULTISTEP_STAIRS", "#RAILING", "#ESCALATORS", "#LADDERS"], "#FIREPLACES_MENU": ["#OPEN_FIREPLACES", "#CLOSED_FIREPLACES", "#BIO_FIREPLACES", "#STOVES", "#FIREWOODS", "#FIREPLACE_PORTALS"], "#FENCES_MENU": ["#GATES", "#GARAGE_GATES", "#MODERN_FENCES", "#OUTDOOR_FENCES", "#DECORATIVE_FENCES"], "#CEILING": ["#GC_CEILING", "#WOODEN_CEILING", "#METALNESS_CEILING", "#ARMSTRONG_CEILING", "#DESIGN_CEILING"], "#RADIATORS": ["#MODERN_RADIATORS", "#FLOOR_CONVECTOR", "#VINTAGE_RADIATORS", "#ELECTRICAL_RADIATOR"], "#COLUMNS": ["#ORDER_COLUMNS", "#PILASTER", "#WOODEN_COLUMNS"], "#ROOFS": ["#ROOF_TILES", "#GUTTER_SYSTEM", "#SOLAR_PANELS"], "#VENTILATION_SYSTEM": ["#RECUPERATORS", "#VENTILATION_CONSTRUCTORS", "#VENTILATION_FANS", "#VENTILATION_GRILLES"], "#OTHER_ARCH": ["#ELEVATORS", "#POST_BOXES", "#FIREALARM_SYSTEM", "#TRASH_BINS", "#OTHER_ARCHITECTURE_ELEMENTS"] }, "#BATHROOM_MENU": { "#BATHROOM_FAUCETS_MENU": ["#BATHTUBE_FAUCETS", "#SHOWER_FAUCETS", "#HAND_WASHING_FAUCETS", "#HYGIENIC_SHOWERS"], "#BATHROOM_FURNITURE_MENU": ["#CLASSICAL_BATHROOM_FURNITURE", "#MODERN_BATHROOM_FURNITURE", "#WOODEN_BATHROOM_FURNITURE"], "#BATHTUBS_MENU": ["#FREESTANDING_BATHTUBS", "#BUILT_IN_BATHTUBS", "#JACUZZI", "#CORNER_BATHTUBS"], "#BATHROOM_APPLIANCES_MENU": ["#BATHROOM_APPLIANCES", "#BOILERS", "#CUTTING", "#HAIR_DRYERS", "#HANDS_DRYERS", "#IRONING_SYSTEMS", "#IRONS", "#TOOTHBRUSHES", "#TRIMERS", "#WASHING_MACHINES", "#DRYING_MACHINES"], "#TOILETS_MENU": ["#HIDDEN_TOILETS", "#SMART_TOILETS", "#BIDETS", "#URINALS", "#TOILETS_SET"], "#WASH_BASINS_MENU": ["#OVERHEAD_WASH_BASINS", "#FREESTANDING_WASH_BASINS", "#CONSOLE_WASH_BASINS", "#DOUBLE_WASH_BASINS"], "#BATHROOM_DECOR": ["#BATHROOM_ACCESSORIES", "#BATHROOM_BASKETS", "#BATHROOM_CARPETS", "#BATHROOM_DECORATION", "#BATHROOM_DECORATION_SET", "#BATHROOM_PROPS", "#BATHROOM_MIRRORS", "#BATHROOM_RACKS", "#ROBES", "#TOWELS", "#BATHROOM_CURTAINS", "#TOWEL_RAILS", "#LAUNDRY_ROOMS", "#BATHROOM_ENGENEERING", "#BATHROOM_SET"], "#SHOWERS": ["#SHOWER_CABINS", "#SHOWER_DRAINS", "#SHOWER_TRAYS"] }, "#FURNITURE_MENU": { "#SOFAS_MENU": ["#MODULAR_SOFAS", "#CORNER_SOFAS", "#THREE_PLACES_SOFAS", "#TWO_PLACES_SOFAS", "#LEATHER_SOFAS", "#RADIAL_SOFAS"], "#BEDS_MENU": ["#DOUBLE_BEDS", "#SINGLE_BEDS", "#CHILDRENS_BEDS", "#MATTRESSES", "#CIRCLE_BEDS"], "#CONSOLES_MENU": ["#CONSOLES", "#CLASSICAL_CONSOLES", "#HARD_CLASSICAL_CONSOLES", "#MODERN_CONSOLES", "#WOODEN_CONSOLES"], "#CHAIRS_MENU": ["#BAR_CHAIRS", "#OFFICE_CHAIRS", "#CLASSICAL_CHAIRS", "#MODERN_CHAIRS", "#GAMING_CHAIRS"], "#TABLES_MENU": ["#DINING_TABLES", "#COFFEE_TABLES", "#WORKING_TABLES", "#DRESSING_TABLES"], "#CABINETS_MENU": ["#WARDROBE_CABINETS", "#CUPBOARDS", "#HOME_BARS", "#KITCHEN_CASES"], "#ARMCHAIRS_MENU": ["#CLASSICAL_ARMCHAIRS", "#MODERN_ARMCHAIRS", "#LEATHER_ARMCHAIRS", "#ROCKING_ARMCHAIRS", "#HANGING_ARMCHAIRS"], "#RACKS_MENU": ["#MODERN_RACKS", "#METALNESS_RACKS", "#WOODEN_RACKS", "#HANGING_RACKS"], "#OFFICE_FURNITURE_MENU": ["#RECEPTIONS", "#OFFICE_TABLES", "#OFFICE_CHAIRS", "#CONFERENCE_FURNITURE_SET"], "#FURNITURE_SET_MENU": ["#FURNITURE_SET", "#BEDROOM_FURNITURE_SET", "#CABINETS_FURNITURE_SET", "#CHAIRS_TABLES_SET", "#CHILDRENS_CHAIRS_TABLES_SET", "#DINING_CHAIRS_TABLES_SET", "#DINING_FURNITURE_SET", "#CIRCLE_DINING_FURNITURE_SET", "#RECTANGULAR_DINING_FURNITURE_SET", "#DRESSING_CHAIRS_TABLES_SET", "#WORKING_CHAIRS_TABLES_SET", "#OTHER_CHAIRS_TABLES_SET", "#CLASSICAL_CHAIRS_TABLES_SET", "#MODERN_CHAIRS_TABLES_SET", "#WOODEN_CHAIRS_TABLES_SET", "#FURNITURE_WALLS", "#HALLWAY_SET", "#CLASSICAL_HALLWAYS", "#MODERN_HALLWAYS", "#HALLWAY_ELEMENTS", "#TV_WALL_SET", "#CLASSICAL_TV_WALLS", "#MODERN_TV_WALLS", "#WARDROBE_SET", "#CLASSICAL_WARDROBES", "#MODERN_WARDROBES", "#SOFA_ARMCHAIR_SET", "#WORKING_PLACE_FURNITURE_SET"], "#CHEST_OF_DRAWERS_MENU": ["#CLASSICAL_CHEST_OF_DRAWERS", "#MODERN_CHEST_OF_DRAWERS", "#WOODEN_CHEST_OF_DRAWERS"], "#OUTDOOR_FURNITURE_MENU": ["#OUTDOOR_ARMCHAIRS", "#OUTDOOR_SOFAS", "#OUTDOOR_TABLES", "#OUTDOOR_SET"] }, "#KIDS_MENU": { "#CHILDRENS_FURNITURE": ["#BABIES_BEDS", "#CHILDRENS_SOFA_BEDS", "#CORNER_BEDS", "#DOUBLE_BEDS", "#HOUSE_CHILDRENS_BEDS", "#SINGLE_BEDS", "#CLASSICAL_CHILDRENS_BEDS", "#MODERN_CHILDRENS_BEDS", "#WOODEN_CHILDRENS_BEDS", "#METALNESS_CHILDRENS_BEDS", "#CHILDRENS_BED_BEDSIDE_TABLES_SET", "#CHILDRENS_CABINETS", "#CHILDRENS_CHAIRS", "#CHILDRENS_CHEST_OF_DRAWERS", "#CHILDRENS_FURNITURE_SET", "#CHILDRENS_FURNITURE_WALLS", "#CHILDRENS_CHAIRS_TABLES_SET", "#CHILDRENS_SOFT_SEATING", "#CHILDRENS_RACKS"], "#CHILD_TENTS": [], "#CHILDROOM_DECORATION": ["#BALLS_POOLS", "#CHALK_BOARDS", "#CHILDROOM_BASKETS", "#CHILD_PICTURES", "#STATIONERIES", "#CHILD_CARPETS"], "#CHILDROOM_SET": ["#CHILD_GARDEN", "#CHILDROOM_RACKS", "#CHILDROOM_SPORT_WALLS", "#CHILDROOMS_SEATING"], "#TOYS": ["#DOLLS", "#FIGURINES_TOYS", "#KAWS", "#OTHER_TOYS", "#SIMULATION_TOYS", "#STUFFED_ANIMALS", "#ROCKING_TOYS", "#TOYS_BASKETS", "#TOYS_CONSTRUCTOR", "#TOYS_LEGO"] }, "#DECORATION_MENU": { "#WALL_DECORATION_MENU": ["#DECORATIVE_MASKS", "#MACRAME", "#SINGLE_WALL_DECORATION", "#WALL_DECORATION_SET", "#WALL_HEADS", "#WALL_MAPS", "#WOOD_DECORATION"], "#WALL_PANELS_MENU": ["#FLOORING_SCREENS", "#GLASS_PARTITIONS", "#GYPSUM_PANELS", "#HEADBOARD_PANELS", "#METALNESS_PANELS", "#PANGU_PANELS", "#PARTITIONS", "#SOFT_PANELS", "#STONE_PANELS", "#WOODEN_PANELS"], "#PICTURES_MENU": ["#ABSTRACT_PICTURES", "#CLASSICAL_PICTURES", "#MODERN_PICTURES", "#PAINTINGS", "#PICTURES_SET", "#POSTERS", "#STREET_ART", "#VERTICAL_PICTURES", "#HORIZONTAL_PICTURES", "#SQUARE_PICTURES"], "#TABLE_DECORATION_MENU": ["#CANDLESTICKS", "#DECORATIVE_BOWL", "#DECORATIVE_FIGURES", "#DECORATIVE_PLATES", "#STREET_DECORATION", "#TABLE_DECORATION_SET", "#TRAY"], "#CLOCKS_MENU": ["#CLOCKS", "#FLOORSTANDING_CLOCKS", "#TABLESTANDING_CLOCKS", "#WALLHANGING_CLOCKS", "#WATCHES", "#MODERN_CLOCKS"], "#CURTAINS_MENU": ["#ROMAN_BLINDS", "#ROLLER_BLINDS", "#CLASSICAL_CURTAINS", "#JALOUSIES", "#BLINDS"], "#CARPETS_MENU": ["#CLASSICAL_CARPETS", "#MODERN_CARPETS", "#SKIN_CARPETS", "#FLUFFY_CARPETS"], "#BOOKS_MENU": ["#BOOKS", "#MAGAZINES", "#NEWS_PAPERS", "#CHILD_BOOKS", "#RETRO_BOOKS", "#BOOKS_DECORATION"], "#BAGS_MENU": ["#BACKPACKS", "#HANDBAGS", "#SUITCASES", "#SPORT_BAGS"], "#CLOTHES_MENU": ["#DRESSES", "#OUTERWEAR", "#SHIRTS", "#MANEKENS"], "#MIRRORS_MENU": ["#MIRRORS", "#FLOORSTANDING_MIRRORS", "#WALLHANGING_MIRRORS", "#MODERN_MIRRORS", "#CLASSICAL_MIRRORS", "#DECORATIVE_MIRRORS"], "#VASES_MENU": ["#CERAMIC_VASES", "#GLASS_VASES", "#DECORATIVE_VASES"], "#OTHER_DECOR": ["#ACCESSORIES", "#ANIMALS_PROPS", "#AQUARIUMS", "#BASKETS", "#CANDLES", "#CHRISTMAS", "#CHRISTMAS_TREES", "#CLEANING_PROPS", "#DECORATIVE_STUCCO", "#STUCCO_BASEBOARDS", "#STUCCO_BRACKETS", "#STUCCO_CARVING", "#STUCCO_CORNICES", "#STUCCO_MOLDING", "#SUCCO_ROSETTES", "#SCULPTURES", "#STATUETTES", "#SHELVING_DECORATION", "#WORKING_PLACE_DECORATION", "#PILLOWS", "#SEATING_PILLOWS", "#WREATHS", "#SIGNBOARDS"] }, "#KITCHEN_MENU": { "#KITCHEN_FURNITURE_SET_MENU": ["#MODERN_KITCHEN_FURNITURE", "#CLASSICAL_KITCHEN_FURNITURES", "#KITCHEN_ISLANDS"], "#KITCHEN_APPLIANCES_MENU": ["#REFRIGERATORS", "#KITCHEN_OVENS", "#KITCHEN_HOODS", "#DISHWASHERS", "#COFFEE_MACHINES"], "#KITCHEN_DECORATION_MENU": ["#TABLEWARES", "#DRINKS", "#FOOD", "#KITCHEN_HERBS"], "#KITCHEN_ENG": ["#KITCHEN_FAUCETS", "#KITCHEN_SINKS", "#RESTAURANT_KITCHENS"] }, "#LIGHTING_MENU": { "#PENDANT_LAMPS_MENU": ["#CHANDLIERS", "#VINTAGE_CHANDLIERS", "#MODERN_CHANDLIERS", "#LARGE_PENDANT_SET"], "#SCONCES_MENU": ["#MODERN_SCONCES", "#CLASSICAL_SCONCES", "#DECORATIVE_SCONCES", "#READING_SCONCES"], "#SPOTLAMPS_MENU": ["#TRACK_LAMPS", "#BUILT_IN_SPOTLAMPS", "#OVEAHEAD_SPOTLAMPS"], "#OUTDOOR_LAMPS_MENU": ["#STREET_LAMPS", "#PAVEMENT_LAMPS", "#HANGING_OUTDOOR_LAMPS"], "#CEILING_LAMPS_MENU": ["#CLASSICAL_CEILING_LAMPS", "#MODERN_CEILING_LAMPS", "#FANS"], "#TECHNICAL_LAMPS_MENU": ["#TECHNICAL_LAMPS", "#GARLANDS", "#NEON_TEXT", "#STUDIO_LAMPS"], "#OTHER_LIGHT": ["#FLOOR_LAMPS", "#CLASSICAL_FLOOR_LAMPS", "#MODERN_FLOOR_LAMPS", "#TABLE_LAMPS", "#CLASSICAL_TABLE_LAMPS", "#MODERN_TABLE_LAMPS", "#LAMPS_SET", "#CLASSICAL_LAMPS_SET", "#MODERN_LAMPS_SET"] }, "#NATURE_MENU": { "#PLANTS_MENU": ["#POTTED_INDOOR_PLANTS", "#DECORATIVE_PLANTS", "#HANGING_PLANTS", "#FLOWERS"], "#TREES": ["#CONIFEROUS_TREES", "#DECIDUOUS_TREES", "#TROPICAL_TREES", "#FRUIT_TREES"], "#BUSHES": ["#CONIFEROUS_BUSHES", "#FLOWERING_BUSHES"], "#BRANCHES_MENU": ["#BAMBOO_DECORATION", "#FIREWOODS", "#DECORATIVE_BRANCHES"] }, "#TECHNOLOGIES_MENU": { "#AUDIO_APPLIANCES_MENU": ["#AUDIO_APPLIANCES", "#AUDIO_COLUMNS", "#AUDIO_SPEAKERS", "#AUDIO_CONSOLES", "#AUDIO_SYSTEMS", "#HEADPHONES", "#MICROPHONES", "#TAPE_RECORDERS", "#VINYL_PLAYERS"], "#ELECTRONICS_MENU": ["#ELECTRONICS", "#CAMERAS", "#CAMERA_ACTION", "#CAMERA_STANDS", "#VIDEOCAMERAS", "#GAME_CONSOLES", "#NINTENDO", "#PLAYSTATION", "#XBOX", "#LAPTOPS", "#LAPTOP_AIRCOOLS", "#PC", "#PC_MONITORES", "#PC_PERIPHERALS", "#PC_SERVERS", "#PC_SET", "#PC_SYSTEM_UNIT", "#SMARTPHONES", "#TABLETS", "#TV", "#TV_PROPS", "#TV_SET", "#DVD", "#GAME_SIMULATORS"], "#HOUSEHOLD_APPLIANCES_MENU": ["#HOUSEHOLD_APPLIANCES", "#AIR_CONDITIONING", "#AIR_CONDITIONER_SET", "#HIDDEN_AIR_CONDITIONERS", "#INDOOR_AIR_CONDITIONERS", "#OUTDOOR_AIR_CONDITIONERS", "#INTERCOMS", "#SEWING_MACHINE", "#VACUUM_CLEANER", "#ROBOTIC_VACUUMS", "#UPRIGHT_VACUUMS"], "#OFFICE_APPLIANCES_MENU": ["#OFFICE_PHONES", "#PRINTERS", "#PROJECTORS", "#PROJECTOR_SCREENS", "#WATER_COOLERS"], "#OTHER_TECH": ["#ENGENERING_APPLIANCES", "#SOCKETS", "#SWITCHES", "#ELECTRICAL_PANELS", "#RETRO_APPLAINCES", "#GRAMOPHONES", "#RETRO_CAMERAS", "#RETRO_PHONES", "#RETRO_RADIO", "#RETRO_TAPE_RECORDERS", "#RETRO_TYPEWRITERS", "#RETRO_PC", "#AIR_HUMIDIFIERS", "#ANTHENAS", "#CHARGING_STATIONS", "#ELECTRONIC_BOARDS", "#ELECTRIONIC_SCALES", "#ALARM_CLOCKS", "#MAGNITOLAS", "#QUADROCOPTERS", "#ROBOTS", "#ROUTERS", "#SAFES", "#SECURITY_SYSTEM", "#STAIR_LIFTS", "#TELESCOPES", "#CAR_CHARGERS", "#WATER_FILTERS", "#BANKNOTE_COUNTERS", "#AIR_PURIFIERS", "#VENTILATORS"] }, "#MATHERIALS_MENU": { "#NATURAL_MATS_MENU": ["#NATURAL_MATS", "#ASPHALT", "#GLASS", "#GROUND", "#METALS", "#PEBBLES", "#SAND", "#SNOW", "#WATER", "#ICE"], "#STONES_MENU": ["#STONES", "#FINE_STONES", "#MARBLE", "#ONYX", "#SLATE", "#TERAZZO", "#TRAVERTINE", "#ROCK_STONES", "#STONE_PANELS", "#STONEWALL", "#STONEWORK"], "#TILES_MENU": ["#TILES", "#BRICK_TILES", "#CONCRETE_TILES", "#FLOOR_TILES", "#FINE_TILES", "#LARGE_TILES", "#MARBLE_TILES", "#ONYX_TILES", "#PURE_TILES", "#RUST_TILES", "#TERAZZO_TILES", "#TRAVERTINE_TILES", "#WOODEN_TILES", "#MOSAIC", "#PAINTED_TILES", "#PATTERN_TILES", "#RELIEF_TILES", "#SLATE_TILES", "#OTHER_TILES"], "#WALL_COVERING_MENU": ["#WALL_COVERING", "#CONCRETE", "#PLASTER", "#WALLPAPERS"], "#WOOD_MENU": ["#WOOD", "#FINE_WOOD", "#WOOD_FLOORING", "#TERRACE_FLOORING", "#WOOD_PANELS"], "#AERIAL_TEXTURES_MENU": ["#aerial_textures"], "#OTHER_MATS": ["#BACKGROUND", "#BRICKS", "#FLOORING_CARPETS", "#FABRICS", "#LEATHER", "#HDRI", "#OSL", "#PAVEMENTS"] }, "#OUTDOOR_ELEMENTS_MENU": { "#BUILDINGS_MENU": ["#BUILDINGS", "#APARTMENT_BUILDINGS", "#MODERN_APARTMENT_BUILDINGS", "#RETRO_APARTMENT_BUILDINGS", "#SMALL_APARTMENT_BUILDINGS", "#CONSTRUCTIONS", "#ARBORS", "#BUILDINGS_FACADES", "#DISTRICTS", "#PERSONAL_BUILDINGS", "#SACRED_BUILDINGS", "#TECHNICAL_BUILDINGS", "#URBAN_BUILDINGS", "#GARAGES", "#YURTS"], "#HOME_ENVIROMENT_MENU": ["#HOME_ENVIROMENT", "#BACK_YARDS", "#BARBECUES", "#GRILLES", "#MODERN_BARBECUES", "#OVENS", "#TANDOORS", "#CAMPFIRES", "#GARDEN_BASINS", "#HAMMOCKS", "#HIVES", "#HOME_ARBORS", "#HOME_ENVIROMENTS_PROPS", "#GREENHOUSES", "#PERGOLAS", "#SWIMMING_POOL_YARDS", "#SWIMMING_POOLS", "#SWINGS", "#OUTDOOR_UMBRELLAS"], "#URBAN_ENVIRONMENT_MENU": ["#URBAN_ENVIRONMENT", "#CONSTRUCTIONS", "#ENTERTAIMENT", "#ATTRACTIONS", "#STAGES", "#PLAYGROUNDS", "#CHILDRENS_PLAYGROUNDS", "#SPORT_FIELDS", "#SPORT_GROUNDS", "#FLAGS", "#FOUNTAINS", "#PERGOLAS", "#SCAFFOLDINGS", "#SHIPPING_CONTAINERS", "#STREETS", "#BUS_STOPS", "#ROADS", "#ROAD_BORDERS", "#ROAD_PROPS", "#STREET_ENGENEERING", "#STREET_PROPS", "#BARRIERS", "#BIKE_STOPS", "#GARBAGE_TANKS", "#STREET_BENCHES", "#TRASH_BINS", "#STREET_PHONES"], "#OTHER_OUTDOOR": ["#PLANETS", "#SUBURBAN_ENVIRONMENT", "#BEACH_PROPS", "#TOURIST_TENTS"] } };
-
         const tg = window.Telegram.WebApp;
         tg.expand();
 
@@ -70,16 +65,14 @@
         let curL1 = 'all', curL2 = 'all';
         let displayLimit = 60;
 
-        // --- 1. АВТОРИЗАЦІЯ (ВИНЕСЕНА ГЛОБАЛЬНО) ---
+        // Глобальний обробник відповіді
         window.authHandler = function(data) {
-            console.log("Response Auth:", data);
+            console.log("Auth result:", data);
             if (data && (data.access === true || data.daysLeft > 0)) {
-                // ПУСКАЄМО
                 document.getElementById('loader').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-                loadModels(); // Тільки тепер вантажимо моделі
+                document.getElementById('appContent').style.display = 'block';
+                loadModels();
             } else {
-                // БЛОКУЄМО
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('paywall').style.display = 'flex';
                 document.body.style.overflow = 'hidden';
@@ -88,21 +81,29 @@
 
         function checkAccess() {
             const user = tg.initDataUnsafe?.user;
-            if (!user) {
-                document.getElementById('loader').innerText = "Відкрийте через бота";
+            
+            // Якщо не вдалося отримати дані користувача від Telegram
+            if (!user || !user.id) {
+                document.getElementById('loader').innerHTML = `
+                    <div style="color:orange; padding:20px;">
+                        ⚠️ Помилка авторизації Telegram.<br>
+                        Будь ласка, відкрийте додаток безпосередньо через кнопку в боті.
+                    </div>`;
                 return;
-            } 
+            }
 
             const userId = String(user.id);
             const userName = encodeURIComponent(user.username || (user.first_name + " " + (user.last_name || "")));
 
             const script = document.createElement('script');
-            // t=${Date.now()} запобігає кешуванню відповіді
             script.src = `${AUTH_SCRIPT_URL}?userId=${userId}&userName=${userName}&callback=authHandler&t=${Date.now()}`;
             document.body.appendChild(script);
         }
 
-        // --- 2. МОДЕЛІ ---
+        // --- categoryData (Ваші дані без змін) ---
+        const categoryData = { "#ARCHITECTURE_ELEMENTS_MENU": { "#DOORS_MENU": ["#ENTRANCE_DOORS", "#INTERIOR_DOORS", "#SLIDING_DOORS", "#FACADE_DOORS", "#FIRE_DOORS", "#DOOR_HANDLES"], "#WINDOWS_MENU": ["#PANORAMIC_WINDOWS", "#DORMER_WINDOWS", "#FACADE_WINDOWS", "#VITRAGE_WINDOWS", "#SHUTTERS", "#WINDOWS_SET"], "#STAIRS_MENU": ["#SPIRAL_STAIRS", "#SINGLESTEP_STAIRS", "#MULTISTEP_STAIRS", "#RAILING", "#ESCALATORS", "#LADDERS"], "#FIREPLACES_MENU": ["#OPEN_FIREPLACES", "#CLOSED_FIREPLACES", "#BIO_FIREPLACES", "#STOVES", "#FIREWOODS", "#FIREPLACE_PORTALS"], "#FENCES_MENU": ["#GATES", "#GARAGE_GATES", "#MODERN_FENCES", "#OUTDOOR_FENCES", "#DECORATIVE_FENCES"], "#CEILING": ["#GC_CEILING", "#WOODEN_CEILING", "#METALNESS_CEILING", "#ARMSTRONG_CEILING", "#DESIGN_CEILING"], "#RADIATORS": ["#MODERN_RADIATORS", "#FLOOR_CONVECTOR", "#VINTAGE_RADIATORS", "#ELECTRICAL_RADIATOR"], "#COLUMNS": ["#ORDER_COLUMNS", "#PILASTER", "#WOODEN_COLUMNS"], "#ROOFS": ["#ROOF_TILES", "#GUTTER_SYSTEM", "#SOLAR_PANELS"], "#VENTILATION_SYSTEM": ["#RECUPERATORS", "#VENTILATION_CONSTRUCTORS", "#VENTILATION_FANS", "#VENTILATION_GRILLES"], "#OTHER_ARCH": ["#ELEVATORS", "#POST_BOXES", "#FIREALARM_SYSTEM", "#TRASH_BINS", "#OTHER_ARCHITECTURE_ELEMENTS"] }, "#BATHROOM_MENU": { "#BATHROOM_FAUCETS_MENU": ["#BATHTUBE_FAUCETS", "#SHOWER_FAUCETS", "#HAND_WASHING_FAUCETS", "#HYGIENIC_SHOWERS"], "#BATHROOM_FURNITURE_MENU": ["#CLASSICAL_BATHROOM_FURNITURE", "#MODERN_BATHROOM_FURNITURE", "#WOODEN_BATHROOM_FURNITURE"], "#BATHTUBS_MENU": ["#FREESTANDING_BATHTUBS", "#BUILT_IN_BATHTUBS", "#JACUZZI", "#CORNER_BATHTUBS"], "#BATHROOM_APPLIANCES_MENU": ["#BATHROOM_APPLIANCES", "#BOILERS", "#CUTTING", "#HAIR_DRYERS", "#HANDS_DRYERS", "#IRONING_SYSTEMS", "#IRONS", "#TOOTHBRUSHES", "#TRIMERS", "#WASHING_MACHINES", "#DRYING_MACHINES"], "#TOILETS_MENU": ["#HIDDEN_TOILETS", "#SMART_TOILETS", "#BIDETS", "#URINALS", "#TOILETS_SET"], "#WASH_BASINS_MENU": ["#OVERHEAD_WASH_BASINS", "#FREESTANDING_WASH_BASINS", "#CONSOLE_WASH_BASINS", "#DOUBLE_WASH_BASINS"], "#BATHROOM_DECOR": ["#BATHROOM_ACCESSORIES", "#BATHROOM_BASKETS", "#BATHROOM_CARPETS", "#BATHROOM_DECORATION", "#BATHROOM_DECORATION_SET", "#BATHROOM_PROPS", "#BATHROOM_MIRRORS", "#BATHROOM_RACKS", "#ROBES", "#TOWELS", "#BATHROOM_CURTAINS", "#TOWEL_RAILS", "#LAUNDRY_ROOMS", "#BATHROOM_ENGENEERING", "#BATHROOM_SET"], "#SHOWERS": ["#SHOWER_CABINS", "#SHOWER_DRAINS", "#SHOWER_TRAYS"] }, "#FURNITURE_MENU": { "#SOFAS_MENU": ["#MODULAR_SOFAS", "#CORNER_SOFAS", "#THREE_PLACES_SOFAS", "#TWO_PLACES_SOFAS", "#LEATHER_SOFAS", "#RADIAL_SOFAS"], "#BEDS_MENU": ["#DOUBLE_BEDS", "#SINGLE_BEDS", "#CHILDRENS_BEDS", "#MATTRESSES", "#CIRCLE_BEDS"], "#CONSOLES_MENU": ["#CONSOLES", "#CLASSICAL_CONSOLES", "#HARD_CLASSICAL_CONSOLES", "#MODERN_CONSOLES", "#WOODEN_CONSOLES"], "#CHAIRS_MENU": ["#BAR_CHAIRS", "#OFFICE_CHAIRS", "#CLASSICAL_CHAIRS", "#MODERN_CHAIRS", "#GAMING_CHAIRS"], "#TABLES_MENU": ["#DINING_TABLES", "#COFFEE_TABLES", "#WORKING_TABLES", "#DRESSING_TABLES"], "#CABINETS_MENU": ["#WARDROBE_CABINETS", "#CUPBOARDS", "#HOME_BARS", "#KITCHEN_CASES"], "#ARMCHAIRS_MENU": ["#CLASSICAL_ARMCHAIRS", "#MODERN_ARMCHAIRS", "#LEATHER_ARMCHAIRS", "#ROCKING_ARMCHAIRS", "#HANGING_ARMCHAIRS"], "#RACKS_MENU": ["#MODERN_RACKS", "#METALNESS_RACKS", "#WOODEN_RACKS", "#HANGING_RACKS"], "#OFFICE_FURNITURE_MENU": ["#RECEPTIONS", "#OFFICE_TABLES", "#OFFICE_CHAIRS", "#CONFERENCE_FURNITURE_SET"], "#FURNITURE_SET_MENU": ["#FURNITURE_SET", "#BEDROOM_FURNITURE_SET", "#CABINETS_FURNITURE_SET", "#CHAIRS_TABLES_SET", "#CHILDRENS_CHAIRS_TABLES_SET", "#DINING_CHAIRS_TABLES_SET", "#DINING_FURNITURE_SET", "#CIRCLE_DINING_FURNITURE_SET", "#RECTANGULAR_DINING_FURNITURE_SET", "#DRESSING_CHAIRS_TABLES_SET", "#WORKING_CHAIRS_TABLES_SET", "#OTHER_CHAIRS_TABLES_SET", "#CLASSICAL_CHAIRS_TABLES_SET", "#MODERN_CHAIRS_TABLES_SET", "#WOODEN_CHAIRS_TABLES_SET", "#FURNITURE_WALLS", "#HALLWAY_SET", "#CLASSICAL_HALLWAYS", "#MODERN_HALLWAYS", "#HALLWAY_ELEMENTS", "#TV_WALL_SET", "#CLASSICAL_TV_WALLS", "#MODERN_TV_WALLS", "#WARDROBE_SET", "#CLASSICAL_WARDROBES", "#MODERN_WARDROBES", "#SOFA_ARMCHAIR_SET", "#WORKING_PLACE_FURNITURE_SET"], "#CHEST_OF_DRAWERS_MENU": ["#CLASSICAL_CHEST_OF_DRAWERS", "#MODERN_CHEST_OF_DRAWERS", "#WOODEN_CHEST_OF_DRAWERS"], "#OUTDOOR_FURNITURE_MENU": ["#OUTDOOR_ARMCHAIRS", "#OUTDOOR_SOFAS", "#OUTDOOR_TABLES", "#OUTDOOR_SET"] }, "#KIDS_MENU": { "#CHILDRENS_FURNITURE": ["#BABIES_BEDS", "#CHILDRENS_SOFA_BEDS", "#CORNER_BEDS", "#DOUBLE_BEDS", "#HOUSE_CHILDRENS_BEDS", "#SINGLE_BEDS", "#CLASSICAL_CHILDRENS_BEDS", "#MODERN_CHILDRENS_BEDS", "#WOODEN_CHILDRENS_BEDS", "#METALNESS_CHILDRENS_BEDS", "#CHILDRENS_BED_BEDSIDE_TABLES_SET", "#CHILDRENS_CABINETS", "#CHILDRENS_CHAIRS", "#CHILDRENS_CHEST_OF_DRAWERS", "#CHILDRENS_FURNITURE_SET", "#CHILDRENS_FURNITURE_WALLS", "#CHILDRENS_CHAIRS_TABLES_SET", "#CHILDRENS_SOFT_SEATING", "#CHILDRENS_RACKS"], "#CHILD_TENTS": [], "#CHILDROOM_DECORATION": ["#BALLS_POOLS", "#CHALK_BOARDS", "#CHILDROOM_BASKETS", "#CHILD_PICTURES", "#STATIONERIES", "#CHILD_CARPETS"], "#CHILDROOM_SET": ["#CHILD_GARDEN", "#CHILDROOM_RACKS", "#CHILDROOM_SPORT_WALLS", "#CHILDROOMS_SEATING"], "#TOYS": ["#DOLLS", "#FIGURINES_TOYS", "#KAWS", "#OTHER_TOYS", "#SIMULATION_TOYS", "#STUFFED_ANIMALS", "#ROCKING_TOYS", "#TOYS_BASKETS", "#TOYS_CONSTRUCTOR", "#TOYS_LEGO"] }, "#DECORATION_MENU": { "#WALL_DECORATION_MENU": ["#DECORATIVE_MASKS", "#MACRAME", "#SINGLE_WALL_DECORATION", "#WALL_DECORATION_SET", "#WALL_HEADS", "#WALL_MAPS", "#WOOD_DECORATION"], "#WALL_PANELS_MENU": ["#FLOORING_SCREENS", "#GLASS_PARTITIONS", "#GYPSUM_PANELS", "#HEADBOARD_PANELS", "#METALNESS_PANELS", "#PANGU_PANELS", "#PARTITIONS", "#SOFT_PANELS", "#STONE_PANELS", "#WOODEN_PANELS"], "#PICTURES_MENU": ["#ABSTRACT_PICTURES", "#CLASSICAL_PICTURES", "#MODERN_PICTURES", "#PAINTINGS", "#PICTURES_SET", "#POSTERS", "#STREET_ART", "#VERTICAL_PICTURES", "#HORIZONTAL_PICTURES", "#SQUARE_PICTURES"], "#TABLE_DECORATION_MENU": ["#CANDLESTICKS", "#DECORATIVE_BOWL", "#DECORATIVE_FIGURES", "#DECORATIVE_PLATES", "#STREET_DECORATION", "#TABLE_DECORATION_SET", "#TRAY"], "#CLOCKS_MENU": ["#CLOCKS", "#FLOORSTANDING_CLOCKS", "#TABLESTANDING_CLOCKS", "#WALLHANGING_CLOCKS", "#WATCHES", "#MODERN_CLOCKS"], "#CURTAINS_MENU": ["#ROMAN_BLINDS", "#ROLLER_BLINDS", "#CLASSICAL_CURTAINS", "#JALOUSIES", "#BLINDS"], "#CARPETS_MENU": ["#CLASSICAL_CARPETS", "#MODERN_CARPETS", "#SKIN_CARPETS", "#FLUFFY_CARPETS"], "#BOOKS_MENU": ["#BOOKS", "#MAGAZINES", "#NEWS_PAPERS", "#CHILD_BOOKS", "#RETRO_BOOKS", "#BOOKS_DECORATION"], "#BAGS_MENU": ["#BACKPACKS", "#HANDBAGS", "#SUITCASES", "#SPORT_BAGS"], "#CLOTHES_MENU": ["#DRESSES", "#OUTERWEAR", "#SHIRTS", "#MANEKENS"], "#MIRRORS_MENU": ["#MIRRORS", "#FLOORSTANDING_MIRRORS", "#WALLHANGING_MIRRORS", "#MODERN_MIRRORS", "#CLASSICAL_MIRRORS", "#DECORATIVE_MIRRORS"], "#VASES_MENU": ["#CERAMIC_VASES", "#GLASS_VASES", "#DECORATIVE_VASES"], "#OTHER_DECOR": ["#ACCESSORIES", "#ANIMALS_PROPS", "#AQUARIUMS", "#BASKETS", "#CANDLES", "#CHRISTMAS", "#CHRISTMAS_TREES", "#CLEANING_PROPS", "#DECORATIVE_STUCCO", "#STUCCO_BASEBOARDS", "#STUCCO_BRACKETS", "#STUCCO_CARVING", "#STUCCO_CORNICES", "#STUCCO_MOLDING", "#SUCCO_ROSETTES", "#SCULPTURES", "#STATUETTES", "#SHELVING_DECORATION", "#WORKING_PLACE_DECORATION", "#PILLOWS", "#SEATING_PILLOWS", "#WREATHS", "#SIGNBOARDS"] }, "#KITCHEN_MENU": { "#KITCHEN_FURNITURE_SET_MENU": ["#MODERN_KITCHEN_FURNITURE", "#CLASSICAL_KITCHEN_FURNITURES", "#KITCHEN_ISLANDS"], "#KITCHEN_APPLIANCES_MENU": ["#REFRIGERATORS", "#KITCHEN_OVENS", "#KITCHEN_HOODS", "#DISHWASHERS", "#COFFEE_MACHINES"], "#KITCHEN_DECORATION_MENU": ["#TABLEWARES", "#DRINKS", "#FOOD", "#KITCHEN_HERBS"], "#KITCHEN_ENG": ["#KITCHEN_FAUCETS", "#KITCHEN_SINKS", "#RESTAURANT_KITCHENS"] }, "#LIGHTING_MENU": { "#PENDANT_LAMPS_MENU": ["#CHANDLIERS", "#VINTAGE_CHANDLIERS", "#MODERN_CHANDLIERS", "#LARGE_PENDANT_SET"], "#SCONCES_MENU": ["#MODERN_SCONCES", "#CLASSICAL_SCONCES", "#DECORATIVE_SCONCES", "#READING_SCONCES"], "#SPOTLAMPS_MENU": ["#TRACK_LAMPS", "#BUILT_IN_SPOTLAMPS", "#OVEAHEAD_SPOTLAMPS"], "#OUTDOOR_LAMPS_MENU": ["#STREET_LAMPS", "#PAVEMENT_LAMPS", "#HANGING_OUTDOOR_LAMPS"], "#CEILING_LAMPS_MENU": ["#CLASSICAL_CEILING_LAMPS", "#MODERN_CEILING_LAMPS", "#FANS"], "#TECHNICAL_LAMPS_MENU": ["#TECHNICAL_LAMPS", "#GARLANDS", "#NEON_TEXT", "#STUDIO_LAMPS"], "#OTHER_LIGHT": ["#FLOOR_LAMPS", "#CLASSICAL_FLOOR_LAMPS", "#MODERN_FLOOR_LAMPS", "#TABLE_LAMPS", "#CLASSICAL_TABLE_LAMPS", "#MODERN_TABLE_LAMPS", "#LAMPS_SET", "#CLASSICAL_LAMPS_SET", "#MODERN_LAMPS_SET"] }, "#NATURE_MENU": { "#PLANTS_MENU": ["#POTTED_INDOOR_PLANTS", "#DECORATIVE_PLANTS", "#HANGING_PLANTS", "#FLOWERS"], "#TREES": ["#CONIFEROUS_TREES", "#DECIDUOUS_TREES", "#TROPICAL_TREES", "#FRUIT_TREES"], "#BUSHES": ["#CONIFEROUS_BUSHES", "#FLOWERING_BUSHES"], "#BRANCHES_MENU": ["#BAMBOO_DECORATION", "#FIREWOODS", "#DECORATIVE_BRANCHES"] }, "#TECHNOLOGIES_MENU": { "#AUDIO_APPLIANCES_MENU": ["#AUDIO_APPLIANCES", "#AUDIO_COLUMNS", "#AUDIO_SPEAKERS", "#AUDIO_CONSOLES", "#AUDIO_SYSTEMS", "#HEADPHONES", "#MICROPHONES", "#TAPE_RECORDERS", "#VINYL_PLAYERS"], "#ELECTRONICS_MENU": ["#ELECTRONICS", "#CAMERAS", "#CAMERA_ACTION", "#CAMERA_STANDS", "#VIDEOCAMERAS", "#GAME_CONSOLES", "#NINTENDO", "#PLAYSTATION", "#XBOX", "#LAPTOPS", "#LAPTOP_AIRCOOLS", "#PC", "#PC_MONITORES", "#PC_PERIPHERALS", "#PC_SERVERS", "#PC_SET", "#PC_SYSTEM_UNIT", "#SMARTPHONES", "#TABLETS", "#TV", "#TV_PROPS", "#TV_SET", "#DVD", "#GAME_SIMULATORS"], "#HOUSEHOLD_APPLIANCES_MENU": ["#HOUSEHOLD_APPLIANCES", "#AIR_CONDITIONING", "#AIR_CONDITIONER_SET", "#HIDDEN_AIR_CONDITIONERS", "#INDOOR_AIR_CONDITIONERS", "#OUTDOOR_AIR_CONDITIONERS", "#INTERCOMS", "#SEWING_MACHINE", "#VACUUM_CLEANER", "#ROBOTIC_VACUUMS", "#UPRIGHT_VACUUMS"], "#OFFICE_APPLIANCES_MENU": ["#OFFICE_PHONES", "#PRINTERS", "#PROJECTORS", "#PROJECTOR_SCREENS", "#WATER_COOLERS"], "#OTHER_TECH": ["#ENGENERING_APPLIANCES", "#SOCKETS", "#SWITCHES", "#ELECTRICAL_PANELS", "#RETRO_APPLAINCES", "#GRAMOPHONES", "#RETRO_CAMERAS", "#RETRO_PHONES", "#RETRO_RADIO", "#RETRO_TAPE_RECORDERS", "#RETRO_TYPEWRITERS", "#RETRO_PC", "#AIR_HUMIDIFIERS", "#ANTHENAS", "#CHARGING_STATIONS", "#ELECTRONIC_BOARDS", "#ELECTRIONIC_SCALES", "#ALARM_CLOCKS", "#MAGNITOLAS", "#QUADROCOPTERS", "#ROBOTS", "#ROUTERS", "#SAFES", "#SECURITY_SYSTEM", "#STAIR_LIFTS", "#TELESCOPES", "#CAR_CHARGERS", "#WATER_FILTERS", "#BANKNOTE_COUNTERS", "#AIR_PURIFIERS", "#VENTILATORS"] }, "#MATHERIALS_MENU": { "#NATURAL_MATS_MENU": ["#NATURAL_MATS", "#ASPHALT", "#GLASS", "#GROUND", "#METALS", "#PEBBLES", "#SAND", "#SNOW", "#WATER", "#ICE"], "#STONES_MENU": ["#STONES", "#FINE_STONES", "#MARBLE", "#ONYX", "#SLATE", "#TERAZZO", "#TRAVERTINE", "#ROCK_STONES", "#STONE_PANELS", "#STONEWALL", "#STONEWORK"], "#TILES_MENU": ["#TILES", "#BRICK_TILES", "#CONCRETE_TILES", "#FLOOR_TILES", "#FINE_TILES", "#LARGE_TILES", "#MARBLE_TILES", "#ONYX_TILES", "#PURE_TILES", "#RUST_TILES", "#TERAZZO_TILES", "#TRAVERTINE_TILES", "#WOODEN_TILES", "#MOSAIC", "#PAINTED_TILES", "#PATTERN_TILES", "#RELIEF_TILES", "#SLATE_TILES", "#OTHER_TILES"], "#WALL_COVERING_MENU": ["#WALL_COVERING", "#CONCRETE", "#PLASTER", "#WALLPAPERS"], "#WOOD_MENU": ["#WOOD", "#FINE_WOOD", "#WOOD_FLOORING", "#TERRACE_FLOORING", "#WOOD_PANELS"], "#AERIAL_TEXTURES_MENU": ["#aerial_textures"], "#OTHER_MATS": ["#BACKGROUND", "#BRICKS", "#FLOORING_CARPETS", "#FABRICS", "#LEATHER", "#HDRI", "#OSL", "#PAVEMENTS"] }, "#OUTDOOR_ELEMENTS_MENU": { "#BUILDINGS_MENU": ["#BUILDINGS", "#APARTMENT_BUILDINGS", "#MODERN_APARTMENT_BUILDINGS", "#RETRO_APARTMENT_BUILDINGS", "#SMALL_APARTMENT_BUILDINGS", "#CONSTRUCTIONS", "#ARBORS", "#BUILDINGS_FACADES", "#DISTRICTS", "#PERSONAL_BUILDINGS", "#SACRED_BUILDINGS", "#TECHNICAL_BUILDINGS", "#URBAN_BUILDINGS", "#GARAGES", "#YURTS"], "#HOME_ENVIROMENT_MENU": ["#HOME_ENVIROMENT", "#BACK_YARDS", "#BARBECUES", "#GRILLES", "#MODERN_BARBECUES", "#OVENS", "#TANDOORS", "#CAMPFIRES", "#GARDEN_BASINS", "#HAMMOCKS", "#HIVES", "#HOME_ARBORS", "#HOME_ENVIROMENTS_PROPS", "#GREENHOUSES", "#PERGOLAS", "#SWIMMING_POOL_YARDS", "#SWIMMING_POOLS", "#SWINGS", "#OUTDOOR_UMBRELLAS"], "#URBAN_ENVIRONMENT_MENU": ["#URBAN_ENVIRONMENT", "#CONSTRUCTIONS", "#ENTERTAIMENT", "#ATTRACTIONS", "#STAGES", "#PLAYGROUNDS", "#CHILDRENS_PLAYGROUNDS", "#SPORT_FIELDS", "#SPORT_GROUNDS", "#FLAGS", "#FOUNTAINS", "#PERGOLAS", "#SCAFFOLDINGS", "#SHIPPING_CONTAINERS", "#STREETS", "#BUS_STOPS", "#ROADS", "#ROAD_BORDERS", "#ROAD_PROPS", "#STREET_ENGENEERING", "#STREET_PROPS", "#BARRIERS", "#BIKE_STOPS", "#GARBAGE_TANKS", "#STREET_BENCHES", "#TRASH_BINS", "#STREET_PHONES"], "#OTHER_OUTDOOR": ["#PLANETS", "#SUBURBAN_ENVIRONMENT", "#BEACH_PROPS", "#TOURIST_TENTS"] } };
+
+        // --- 2. ЗАВАНТАЖЕННЯ МОДЕЛЕЙ (ОРИГІНАЛЬНЕ ПРЕВЬЮ) ---
         async function loadModels() {
             try {
                 const res = await fetch(JSON_URL);
@@ -119,7 +120,7 @@
                         return { 
                             id: fId || n, 
                             name: n, 
-                            preview: fId ? `https://lh3.googleusercontent.com/u/0/d/${fId}` : rawP, // ТВОЄ ОРИГІНАЛЬНЕ ПРЕВЬЮ
+                            preview: fId ? `https://lh3.googleusercontent.com/u/0/d/${fId}` : rawP, // ПРЕВЬЮ НЕ ЗМІНЕНО
                             archive: row.c[2] ? String(row.c[2].v) : "#", 
                             tags: row.c[3] ? String(row.c[3].v).toLowerCase() : "" 
                         };
@@ -190,83 +191,4 @@
                 const matchSearch = m.name.toLowerCase().includes(query) || t.includes(query);
                 if (curL1 === 'all' && query === '') return true;
                 const matchL1 = curL1 === 'all' || t.includes(curL1);
-                const matchL2 = curL2 === 'all' || t.includes(curL2);
-                const matchL3 = subTag === 'all' || t.includes(subTag);
-                return matchSearch && matchL1 && matchL2 && matchL3;
-            });
-            renderModels(filtered);
-        }
-
-        function renderModels(models) {
-            const grid = document.getElementById('modelsGrid');
-            grid.innerHTML = '';
-            const visible = models.slice(0, displayLimit);
-            visible.forEach(m => {
-                const isFav = favorites.includes(m.id);
-                const card = document.createElement('div');
-                card.className = 'model-card';
-                card.innerHTML = `
-                    <button class="fav-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${m.id}', this)">❤️</button>
-                    <div class="img-wrapper" onclick="openModal('${m.preview}')">
-                        <img src="${m.preview}" loading="lazy" onerror="this.src='https://via.placeholder.com/160x130/2c2c2c/888888?text=Error'">
-                    </div>
-                    <div class="model-name">${m.name}</div>
-                    <a href="${m.archive}" class="btn-download" target="_blank">Download</a>
-                `;
-                grid.appendChild(card);
-            });
-            if (models.length > displayLimit) {
-                const moreBtn = document.createElement('button');
-                moreBtn.className = 'btn-cat';
-                moreBtn.style.cssText = "width: 100%; margin: 20px 0; padding: 15px; background: #333; color: #fff; border: 1px solid #444; cursor: pointer; font-weight: bold; border-radius: 8px;";
-                moreBtn.innerText = `ПОКАЗАТИ ЩЕ (Залишилось ${models.length - displayLimit})`;
-                moreBtn.onclick = () => { displayLimit += 100; renderModels(models); };
-                grid.appendChild(moreBtn);
-            }
-        }
-
-        function resetAll(btn) {
-            document.querySelectorAll('.btn-cat').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            curL1 = 'all'; curL2 = 'all'; displayLimit = 60;
-            document.getElementById('midCategories').style.display = 'none';
-            document.getElementById('subCategories').style.display = 'none';
-            renderModels(allModels);
-        }
-
-        function toggleFavorite(id, btn) {
-            const idx = favorites.indexOf(id);
-            if (idx > -1) favorites.splice(idx, 1); else favorites.push(id);
-            localStorage.setItem('my3dFavs', JSON.stringify(favorites));
-            btn.classList.toggle('active'); updateFavCounter();
-        }
-
-        function updateFavCounter() {
-            document.getElementById('favCounterBtn').innerText = `❤️ ОБРАНЕ (${favorites.length})`;
-            document.getElementById('clearFavsBtn').style.display = favorites.length > 0 ? 'inline-block' : 'none';
-        }
-
-        function showFavorites(btn) {
-            document.querySelectorAll('.btn-cat').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('midCategories').style.display = 'none';
-            document.getElementById('subCategories').style.display = 'none';
-            renderModels(allModels.filter(m => favorites.includes(m.id)));
-        }
-
-        function clearAllFavorites() {
-            if (confirm("Очистити обране?")) {
-                favorites = []; localStorage.setItem('my3dFavs', JSON.stringify(favorites));
-                updateFavCounter(); renderModels(allModels);
-            }
-        }
-
-        function openModal(src) { document.getElementById('modalImg').src = src; document.getElementById('imageModal').style.display = 'flex'; }
-
-        document.getElementById('searchInput').oninput = () => filterModels();
-        
-        // --- ЗАПУСК ---
-        checkAccess();
-    </script>
-</body>
-</html>
+                const matchL2 = curL2 === 'all' ||
